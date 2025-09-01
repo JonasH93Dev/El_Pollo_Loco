@@ -26,7 +26,17 @@ class DrawableObject {
             this.imageCache[path] = img;
         });
     }
+drawFrame(ctx) {
 
+        if (this instanceof Character || this instanceof Chicken || this instanceof Endboss) {
+        ctx.beginPath();
+        ctx.strokeStyle = 'blue';
+        ctx.rect(this.x, this.y, this.width, this.height);
+        ctx.lineWidth = '5';
+
+        ctx.stroke();
+        }
+    }
 
 
 
