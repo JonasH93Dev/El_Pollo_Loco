@@ -7,11 +7,10 @@ function init(){
     world = new World(canvas, keyboard);
     
  
-    console.log('MY character is', world.character);
 }
 
 window.addEventListener('keydown', (e) => {
-    console.log(e);
+    
     if (e.key == 'ArrowRight') {
         keyboard.RIGHT = true;
     }
@@ -30,10 +29,13 @@ window.addEventListener('keydown', (e) => {
     if (e.key == ' ') {
         keyboard.SPACE = true;
     }
+    if (e.key == 'd') {
+        keyboard.D = true;
+    }
 });
 
 window.addEventListener('keyup', (e) => {
-    console.log(e);
+    
     if (e.key == 'ArrowRight') {
         keyboard.RIGHT = false;
     }
@@ -51,5 +53,8 @@ window.addEventListener('keyup', (e) => {
     }
     if (e.key == ' ') {
         keyboard.SPACE = false;
+    }
+    if (e.key == 'd') {
+        keyboard.D = false;
     }
 });
