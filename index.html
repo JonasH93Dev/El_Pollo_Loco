@@ -1,29 +1,139 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
-  <link rel="stylesheet" href="style.css">
- <script src="./models/drawable-object.class.js"></script>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <title>El pollo loco</title>
+
+    <script src="./classes/sounds.class.js"></script>
+    <script src="./classes/drawable-object.class.js"></script>
+    <script src="./classes/movable-object.class.js"></script>
+    <script src="./classes/character.class.js"></script>
+    <script src="./classes/chicken.class.js"></script>
+    <script src="./classes/chicken-small.class.js"></script>
+    <script src="./classes/bottle.class.js"></script>
+    <script src="./classes/coin.class.js"></script>
+    <script src="./classes/cloud.class.js"></script>
+    <script src="./classes/status-bar-bottles.class.js"></script>
+    <script src="./classes/status-bar-endboss.class.js"></script>
+    <script src="./classes/status-bar-coin.class.js"></script>
+    <script src="./classes/status-bar.class.js"></script>
+    <script src="./classes/world.class.js"></script>
+    <script src="./classes/background-object.class.js"></script>
+    <script src="./classes/keyboard.class.js"></script>
+    <script src="./classes/level.class.js"></script>
+    <script src="./classes/throwable-object.class.js"></script>
+    <script src="./classes/endboss.class.js"></script>
+    <script src="./levels/level1.js"></script>
+    <script src="./js/game.js"></script>
+  </head>
+  <body>
+    <h1></h1>
+
+    <div class="game-container">
+      <canvas id="canvas" width="720" height="480"></canvas>
+
+      <div class="overlay" style="display: none">
+        <div class="panel-game">
+          <div class="pannel-wrapper">
+            <button onclick="restartGame()">RESTART</button>
+            <button id="muteBtn" onclick="toggleMute()">MUTE - M</button>
+            <button onclick="goToMenu()">X</button>
+          </div>
+        </div>
+
+        <div class="panel-moving">
+          <div class="pannel-wrapper">
+            <button id="btnLeft">
+              <img src="./img/arrow_left.png" alt="RIGHT" />
+            </button>
+            <button id="btnRight">
+              <img src="./img/arrow_right.png" alt="LEFT" />
+            </button>
+          </div>
+          <div class="pannel-wrapper">
+            <button id="btnJump">
+              <img src="./img/spacebar.png" alt="SPACE" />
+            </button>
+            <button id="btnThrow">
+              <img src="./img/6_salsa_bottle/salsa_bottle.png" alt="SPACE" />
+              D
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="startScreen" class="startscreen">
+       
+        <button
+          id="btnStartGame"
+          class="button-start-game"
+          onclick="startGame()"
+        >
+          START
+        </button>
+      </div>
+      <div id="endScreenWin" class="endscreen" style="display: none">
+        <div class="endscreen-link-container">
+          <a href="privacy_policy.html">Privacy Policy</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+        </div>
+        <div>
+          <img
+            class="endscreen-img"
+            src="./img/9_intro_outro_screens/win/won_2.png"
+            alt="WIN"
+          />
+        </div>
+        <div class="endscreen-button-container">
+          <button onclick="goToMenu()">BACK TO MENU</button>
+          <button onclick="restartGame()">RESTART</button>
+        </div>
+      </div>
+
+      <div id="endScreenLose" class="endscreen" style="display: none">
+        <div class="endscreen-link-container">
+          <a href="privacy_policy.html">Privacy Policy</a>
+          <a href="datenschutz.html">Datenschutzerklärung</a>
+        </div>
+        <div>
+          <img
+            class="endscreen-img"
+            src="./img/9_intro_outro_screens/game_over/game over!.png"
+            alt="LOSE"
+          />
+        </div>
+        <div class="endscreen-button-container">
+          <button onclick="goToMenu()">BACK TO MENU</button>
+          <button onclick="restartGame()">RESTART</button>
+        </div>
+      </div>
+    </div>
+    <div id="landscapeScreen" class="landscapescreen" style="display: none">
+      <h2>PLEASE ROTATE YOUR PHONE/TABLET TO LANDSAPE MODE</h2>
+      <img src="./img/phone.png" alt="TURN PHONE" />
+    </div>
+    <script src="./scripts/startpage.js"></script>
+  <script src="./models/drawable-object.class.js"></script>
   <script src="./models/movable-object-class.js"></script>
   <script src="./models/background-objects.class.js"></script>
   <script src="./models/chicken.class.js"></script>
+  <script src="./models/chicken-small.class.js"></script>
+  <script src="./models/bottle.class.js"></script>
+  <script src="./models/coin.class.js"></script>
   <script src="./models/cloud.class.js"></script>
+  <script src="./models/sounds.class.js"></script>
   <script src="./models/status-bar.class.js"></script>
+  <script src="./models/status-bar-coin.class.js"></script>
+  <script src="./models/status-bar-bottles.class.js"></script>
+  <script src="./models/status-bar-endboss.class.js"></script>
   <script src="./models/character.class.js"></script>
   <script src="./models/keyboard.class.js"></script>
   <script src="./models/level.class.js"></script>
   <script src="./models/throwable-object.class.js"></script>
   <script src="./models/endboss.class.js"></script>
- 
-  
-  <script src="./levels/level1.js"></script>
   <script src="./models/world.class.js"></script>
   <script src="./scripts/game.js"></script>
-</head>
-<body onload="init()">
-  <h1>EL Pollo Loco</h1>
-  <canvas id="canvas" width="720" height="480"></canvas>
 </body>
 </html>

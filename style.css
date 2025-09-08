@@ -1,9 +1,244 @@
-body{
-    display: flex;
-    flex-direction: column;
-    align-items: center
+@font-face {
+  font-family: "zabras";
+  src: url("fonts/Zabars.ttf") format("truetype");
 }
 
-canvas{
-    background-color: black ;
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  
+  background-position: center;
+  background-size: cover;
+  font-family: "zabras", Arial, Helvetica, sans-serif;
+}
+
+button {
+  cursor: pointer;
+  font-family: "zabras", Arial, Helvetica, sans-serif;
+  font-size: 20px;
+}
+
+a {
+  margin: 8px;
+  text-decoration: none;
+  color: red;
+  font-size: 20px;
+}
+
+a:hover {
+  color: #ffde01;
+}
+
+ul {
+  list-style-type: none;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+li img {
+  height: 30px;
+}
+
+.game-container {
+  position: relative;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+canvas {
+  background-color: black;
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.panel-game {
+  display: flex;
+  justify-content: end;
+}
+
+.panel-moving {
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel-moving button,
+.panel-game button {
+  background-color: #ff9f00;
+  border: 1px solid #ffde01;
+  padding: 8px 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.panel-moving button img {
+  height: 20px;
+}
+
+.pannel-wrapper {
+  display: flex;
+  gap: 24px;
+  padding: 16px;
+}
+
+.landscapescreen {
+  background-color: #ff9f00;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.landscapescreen img {
+  height: 50px;
+}
+
+.startscreen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-image: url("img/9_intro_outro_screens/start/startscreen_2.png");
+  background-position: center;
+  background-size: cover;
+  background-size: 720px 480px;
+}
+
+.button-start-game {
+  background-color: #ffde01;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  border-radius: 12px;
+  font-size: 30px;
+  position: absolute;
+  top: 15%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 20px;
+}
+
+.button-start-game:hover {
+  background-color: greenyellow;
+}
+
+.endscreen {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background-image: url("img/5_background/first_half_background.png");
+  background-position: center;
+  background-size: cover;
+  background-size: 720px 480px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.endscreen-img {
+  max-width: 400px;
+}
+
+.endscreen-link-container {
+  display: flex;
+  gap: 30px;
+}
+
+.endscreen-button-container {
+  position: absolute;
+  bottom: 50px;
+  display: flex;
+  gap: 30px;
+  margin-bottom: 16px;
+}
+
+.endscreen button {
+  background-color: #ffde01;
+  border: none;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+  border-radius: 12px;
+  font-size: 30px;
+  padding: 10px 20px;
+}
+
+.endscreen button:hover {
+  background-color: #ffe74a;
+}
+
+.overlay {
+  position: absolute;
+}
+
+.privacy {
+  padding: 16px;
+}
+
+.info-arrow {
+  background-color: #ffe74a;
+  height: 35px;
+  padding: 4px;
+  position: fixed;
+  top: 40px;
+  right: 50px;
+}
+
+@media (max-width: 720px) {
+  h1 {
+    display: none;
+  }
+}
+
+@media (max-height: 720px) {
+  h1 {
+    display: none;
+  }
+}
+
+@media only screen and (max-width: 720px) {
+  canvas,
+  .landscapescreen,
+  .startscreen,
+  .endscreen {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-height: 480px) {
+  canvas {
+    height: 100vh;
+  }
 }
