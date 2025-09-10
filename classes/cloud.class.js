@@ -1,49 +1,31 @@
 /**
  * Cloud background element that extends {@link MovableObject}.
  *
- * Responsibilities:
+ * Behavior:
  * - Loads a cloud image.
- * - Spawns at a random X position within a horizontal range.
- * - Floats at a random Y height within a vertical band.
- * - Moves continuously to the left to create parallax scrolling.
- *
- * Units & timing:
- * - Positions/dimensions are in pixels.
- * - Animation interval runs ~60 FPS (every ~16.67 ms).
+ * - Spawns at a random X (0–2400 px) and Y (10–40 px).
+ * - Moves left continuously for parallax scrolling.
  *
  * Notes:
- * - Clouds never stop moving; the interval is not cleared.
- * - Multiple clouds can be instantiated to fill the background.
+ * - Runs on a 60 FPS interval.
+ * - The movement interval is never cleared (clouds scroll forever).
  */
 class Cloud extends MovableObject {
-  /** Cloud width (px). */
-  width = 500;
-
-  /** Cloud height (px). */
-  height = 250;
+  /** Dimensions (px). */
+  width = 500; height = 250;
 
   /**
-   * Initializes a new Cloud instance:
-   * - Loads the default cloud image.
-   * - Places the cloud at a random horizontal position (0–2400 px).
-   * - Places the cloud at a vertical offset between 10–40 px.
-   * - Starts continuous leftward movement.
+   * Loads the cloud sprite, sets random position, and starts movement.
    */
   constructor() {
     super().loadImage("img/5_background/layers/4_clouds/1.png");
-    this.x = Math.random() * 2400;       // random horizontal spawn position
-    this.y = 10 + Math.random() * 30;    // random vertical band near top
+    this.x = Math.random() * 2400;
+    this.y = 10 + Math.random() * 30;
     this.animate();
   }
 
-  /**
-   * Starts continuous leftward movement for the cloud.
-   * Updates at ~60 FPS to produce smooth scrolling.
-   * The interval is never cleared (runs for the lifetime of the instance).
-   */
+  /** Moves left continuously at ~60 FPS. */
   animate() {
-    setInterval(() => {
-      this.moveLeft();
-    }, 1000 / 60);
+    setInterval(() => this.moveLeft(), 1000 / 60);
   }
 }

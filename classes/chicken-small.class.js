@@ -1,73 +1,46 @@
 /**
  * Small chicken enemy that extends {@link MovableObject}.
  *
- * Responsibilities:
- * - Moves left continuously at a (randomized) horizontal speed.
- * - Plays walking frames while alive; switches to a single dead frame when dead.
- * - Triggers a chicken sound effect upon death.
+ * Behavior:
+ * - Moves left continuously at a randomized speed.
+ * - Plays walking frames while alive; shows a dead frame when dead.
+ * - Plays a chicken sound effect upon death.
  *
- * Units & timing:
- * - Positions/dimensions are in pixels.
- * - Intervals:
- *   - Movement: ~60 FPS (every 16.67 ms).
- *   - Animation state check: 10 FPS (every 100 ms).
- *
- * Notes on intervals:
- * - `smallChickenMove()` creates an interval in a local variable `intervalMove`.
- *   The class also declares an instance field `intervalMove`, but it is not assigned.
- *   As a result, `clearInterval(this.intervalMove)` in `smallChickenAnimationDeadWalk()`
- *   will not clear the running movement interval. This comment documents the current behavior;
- *   no code changes are made.
+ * Note on intervals:
+ * - `smallChickenMove()` saves its interval in a local variable (`intervalMove`).
+ *   The class field `this.intervalMove` is never assigned.
+ *   Therefore, `clearInterval(this.intervalMove)` does not stop the movement.
  */
 class ChickenSmall extends MovableObject {
-  /** Absolute start Y position (px). */
-  y = 370;
+  /** Start Y position and sprite size (px). */
+  y = 370; height = 50; width = 50;
 
-  /** Sprite height (px). */
-  height = 50;
-
-  /** Sprite width (px). */
-  width = 50;
-
-  /**
-   * Intended holder for the movement interval ID.
-   * Note: In the current implementation this field is never assigned;
-   * the interval ID is stored in a local variable inside `smallChickenMove()`.
-   */
+  /** Placeholder for movement interval (never assigned in current logic). */
   intervalMove;
 
-  /** Frame list for the walking animation. */
+  /** Animation frames. */
   IMAGES_WALKING = [
     "img/3_enemies_chicken/chicken_small/1_walk/1_w.png",
     "img/3_enemies_chicken/chicken_small/1_walk/2_w.png",
     "img/3_enemies_chicken/chicken_small/1_walk/3_w.png",
   ];
-
-  /** Single-frame list for the dead state. */
   IMAGES_DEAD = ["img/3_enemies_chicken/chicken_small/2_dead/dead.png"];
 
   /**
-   * Initializes a new SmallChicken instance:
-   * - Sets the initial image (first walking frame).
-   * - Creates an `AudioManager` for SFX.
-   * - Preloads walking and dead frames.
-   * - Randomizes start X position and horizontal speed.
-   * - Starts movement and animation loops.
+   * Sets initial image/audio, preloads frames, randomizes spawn & speed, starts loops.
    */
   constructor() {
     super().loadImage(this.IMAGES_WALKING[0]);
     this.audioManager = new AudioManager();
     this.loadImages(this.IMAGES_WALKING);
     this.loadImages(this.IMAGES_DEAD);
-    this.x = 400 + Math.random() * 1200;   // random spawn range on the X axis
-    this.speed = 0.12 + Math.random() * 0.4; // random horizontal speed
+    this.x = 400 + Math.random() * 1200;
+    this.speed = 0.12 + Math.random() * 0.4;
     this.animate();
   }
 
   /**
-   * Entry point that wires up behavior:
-   * - Starts continuous leftward movement (~60 FPS).
-   * - Starts periodic state-based animation selection (10 FPS).
+   * Starts movement (~60 FPS) and animation state checks (10 FPS).
    */
   animate() {
     this.smallChickenMove();
@@ -75,37 +48,24 @@ class ChickenSmall extends MovableObject {
   }
 
   /**
-   * Moves the chicken left at its current speed on a fixed interval.
-   * Implementation detail:
-   * - The interval ID is stored in a local `intervalMove` variable (function scope),
-   *   not in the instance field `this.intervalMove`. Therefore, other methods
-   *   cannot clear this interval via `this.intervalMove`.
+   * Moves left at the current speed on a fixed interval.
+   * Interval ID is stored in a local variable (not in `this.intervalMove`).
    */
   smallChickenMove() {
     let intervalMove = setInterval(() => {
       this.moveLeft();
-    }, 1000 / 60); // movement tick (~60 FPS)
+    }, 1000 / 60);
   }
 
   /**
-   * Switches between dead and walking animations based on the chicken's state.
-   *
-   * Behavior:
-   * - When dead:
-   *   - Plays the chicken death sound.
-   *   - Attempts to stop movement using `clearInterval(this.intervalMove)`.
-   *     (Note: As documented above, the actual movement interval is not stored
-   *      in `this.intervalMove`, so movement may continue.)
-   *   - Plays the dead frame.
-   *   - Clears this animation-check interval.
-   * - When alive:
-   *   - Plays the walking animation frames.
+   * Chooses between walking and dead frames; plays death SFX once.
+   * Attempts to stop movement via `clearInterval(this.intervalMove)` (no-op here).
    */
   smallChickenAnimationDeadWalk() {
     let intervalDeadMove = setInterval(() => {
       if (this.isDead()) {
         this.audioManager.playChickenSound();
-        clearInterval(this.intervalMove);
+        clearInterval(this.intervalMove); // not actually set (documented)
         this.playAnimation(this.IMAGES_DEAD);
         clearInterval(intervalDeadMove);
       } else {

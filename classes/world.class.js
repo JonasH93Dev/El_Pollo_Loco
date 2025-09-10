@@ -1,71 +1,19 @@
 /**
- * Represents the main game world.
- *
- * Responsibilities:
- * - Manages all game entities (character, enemies, boss, collectibles).
- * - Runs the main update loop for collisions and interactions.
- * - Handles drawing to the canvas.
- * - Provides logic for throwing bottles and resolving hits.
- *
- * Notes:
- * - Uses `requestAnimationFrame` for continuous drawing.
- * - Uses `setInterval` for logic updates (~10 FPS).
- * - Relies on `level1` as the current level, but allows multiple level objects.
+ * Main game world: manages entities, updates, drawing, and interactions.
+ * - rAF for drawing; setInterval (~10 FPS) for logic.
  */
 class World {
-  /** The current level (default: `level1`). */
-  level = level1;
-
-  /** HTML canvas element. */
-  canvas;
-
-  /** Canvas 2D rendering context. */
-  ctx;
-
-  /** Keyboard input handler. */
-  keyboard;
-
-  /** Camera offset along the X axis (px). */
-  camera_x = 0;
-
-  /** Timestamp (ms) of the last bottle throw. */
-  lastThrowTime = 0;
-
-  /** Main player character. */
+  /** Current level (default: level1). */ level = level1;
+  canvas; ctx; keyboard; camera_x = 0; lastThrowTime = 0;
   character = new Character();
-
-  /** Status bar for player health. */
-  statusBar = new StatusBar();
-
-  /** Status bar for collected coins. */
-  statusBarCoin = new StatusBarCoin();
-
-  /** Status bar for collected bottles. */
-  statusBarBottles = new StatusBarBottles();
-
-  /** Status bar for end boss health. */
-  statusBarEndboss = new StatusBarEndboss();
-
-  /** Tracks bottles that have already hit the end boss (prevent double-count). */
-  setHitBottles = new Set();
-
-  /** Active throwable objects (bottles currently flying). */
-  throwableObject = [];
-
-  /** Collected coins. */
-  coins = [];
-
-  /** Collected bottles. */
-  bottles = [];
-
-  /** Flag indicating whether the end boss has been alerted. */
+  statusBar = new StatusBar(); statusBarCoin = new StatusBarCoin();
+  statusBarBottles = new StatusBarBottles(); statusBarEndboss = new StatusBarEndboss();
+  setHitBottles = new Set(); throwableObject = []; coins = []; bottles = [];
   endbossAlert = false;
 
   /**
-   * Creates a new world instance.
-   *
-   * @param {HTMLCanvasElement} canvas - The canvas element where the world is drawn.
-   * @param {Keyboard} keyboard - The keyboard input handler.
+   * @param {HTMLCanvasElement} canvas - Canvas to draw on.
+   * @param {Keyboard} keyboard - Input state provider.
    */
   constructor(canvas, keyboard) {
     this.audioManager = new AudioManager();
@@ -77,15 +25,10 @@ class World {
     this.run();
   }
 
-  /** Sets the world context inside the character object. */
-  setWorld() {
-    this.character.world = this;
-  }
+  /** Inject world reference into character. */
+  setWorld() { this.character.world = this; }
 
-  /**
-   * Main game logic loop.
-   * Runs every 100 ms (~10 FPS).
-   */
+  /** Main logic loop (~10 FPS). */
   run() {
     setInterval(() => {
       this.checkCollisions();
@@ -98,78 +41,47 @@ class World {
     }, 100);
   }
 
-  /**
-   * Draws the entire world to the canvas.
-   * Uses `requestAnimationFrame` for smooth updates.
-   */
+  /** Draws world & UI via rAF. */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.translate(this.camera_x, 0);
-
     this.addObjectsToMap(this.level.backgroundObjects);
     this.addToMap(this.character);
-    this.addObjectsToMap(this.level.clouds);
-    this.addObjectsToMap(this.level.endboss);
-    this.addObjectsToMap(this.level.enemies);
-    this.addObjectsToMap(this.level.coins);
-    this.addObjectsToMap(this.level.bottles);
-    this.addObjectsToMap(this.throwableObject);
-
+    [this.level.clouds, this.level.endboss, this.level.enemies,
+     this.level.coins, this.level.bottles, this.throwableObject]
+     .forEach(group => this.addObjectsToMap(group));
     this.ctx.translate(-this.camera_x, 0);
-
-    // ------- Fixed objects (UI elements) -------
-    this.addToMap(this.statusBar);
-    this.addToMap(this.statusBarCoin);
-    this.addToMap(this.statusBarBottles);
-    this.addToMap(this.statusBarEndboss);
-
-    this.ctx.translate(this.camera_x, 0);
-    this.ctx.translate(-this.camera_x, 0);
-
-    let self = this;
-    requestAnimationFrame(function () {
-      self.draw();
-    });
+    [this.statusBar, this.statusBarCoin, this.statusBarBottles, this.statusBarEndboss]
+      .forEach(o => this.addToMap(o));
+    requestAnimationFrame(() => this.draw());
   }
 
   /**
-   * Handles throwing bottles when `D` is pressed.
-   * - Enforces a cooldown of 800 ms.
-   * - Updates the bottle status bar.
+   * Handle throwing bottles (cooldown 800 ms) + update bottle bar.
    */
   checkThrowObjects() {
-    let now = Date.now();
-    if (
-      this.keyboard.D &&
-      this.bottles.length > 0 &&
-      now - this.lastThrowTime >= 800
-    ) {
-      let bottle = new ThrowableObject(
-        this.character.x + 100,
-        this.character.y + 100
-      );
+    const now = Date.now();
+    if (this.keyboard.D && this.bottles.length > 0 && now - this.lastThrowTime >= 800) {
+      const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
       this.throwableObject.push(bottle);
       this.bottles.pop();
-      this.statusBarBottles.setPercentage(
-        this.statusBarBottles.percentage - 12.5
-      );
+      this.statusBarBottles.setPercentage(this.statusBarBottles.percentage - 12.5);
       this.lastThrowTime = now;
     }
   }
 
-  /** Checks if bottles collide with any enemies or the end boss. */
+  /** Checks bottle collisions with enemies and end boss. */
   checkBottleCollisionWithAllEnemies() {
-    this.throwableObject.forEach((bottle, bottleIndex) => {
-      this.checkBottleCollisionWithEnemies(bottle, bottleIndex);
-      this.checkBottleCollisionWithEndBoss(bottle, bottleIndex);
+    this.throwableObject.forEach((bottle, i) => {
+      this.checkBottleCollisionWithEnemies(bottle, i);
+      this.checkBottleCollisionWithEndBoss(bottle, i);
     });
   }
 
   /**
-   * Checks for collisions between a bottle and regular enemies.
-   *
-   * @param {ThrowableObject} bottle - The thrown bottle.
-   * @param {number} bottleIndex - Index of the bottle in the throwable array.
+   * Bottle vs. normal enemies.
+   * @param {ThrowableObject} bottle
+   * @param {number} bottleIndex
    */
   checkBottleCollisionWithEnemies(bottle, bottleIndex) {
     this.level.enemies.forEach((enemy, enemyIndex) => {
@@ -182,13 +94,12 @@ class World {
   }
 
   /**
-   * Checks for collisions between a bottle and the end boss.
-   *
-   * @param {ThrowableObject} bottle - The thrown bottle.
-   * @param {number} bottleIndex - Index of the bottle in the throwable array.
+   * Bottle vs. end boss (no double count via set).
+   * @param {ThrowableObject} bottle
+   * @param {number} bottleIndex
    */
   checkBottleCollisionWithEndBoss(bottle, bottleIndex) {
-    this.level.endboss.forEach((endboss, endbossIndex) => {
+    this.level.endboss.forEach((endboss) => {
       if (bottle.isColliding(endboss) && !this.setHitBottles.has(bottle)) {
         endboss.hitEndboss();
         this.statusBarEndboss.setPercentage(endboss.energy);
@@ -198,17 +109,12 @@ class World {
     });
   }
 
-  /**
-   * Lets the character jump on enemies to defeat them.
-   * Requires collision + downward velocity + above-ground state.
-   */
+  /** Stomp-kill enemies when falling onto them. */
   jumpOnEnemy() {
     this.level.enemies.forEach((enemy, index) => {
-      if (
-        this.character.isColliding(enemy) &&
-        this.character.isAboveGround() &&
-        this.character.speedY < 0
-      ) {
+      if (this.character.isColliding(enemy) &&
+          this.character.isAboveGround() &&
+          this.character.speedY < 0) {
         this.character.jumpOfEnemy();
         enemy.hitEnemy();
         this.deleteEnemy(index);
@@ -216,7 +122,7 @@ class World {
     });
   }
 
-  /** Checks collisions between the character and regular enemies. */
+  /** Character vs. enemies (ground collision → damage). */
   checkCollisions() {
     this.level.enemies.forEach((enemy) => {
       if (this.character.isColliding(enemy) && !this.character.isAboveGround()) {
@@ -226,20 +132,18 @@ class World {
     });
   }
 
-  /** Checks collisions between the character and bottles on the ground. */
+  /** Character vs. bottles on ground (collect & update bar). */
   checkCollisionsBottles() {
     this.level.bottles.forEach((bottle, index) => {
       if (this.character.isColliding(bottle)) {
         this.audioManager.playPopSound();
         this.collectBottles(bottle, index);
-        this.statusBarBottles.setPercentage(
-          this.statusBarBottles.percentage + 12.5
-        );
+        this.statusBarBottles.setPercentage(this.statusBarBottles.percentage + 12.5);
       }
     });
   }
 
-  /** Checks collisions between the character and coins. */
+  /** Character vs. coins (collect & update bar). */
   checkCollisionsCoins() {
     this.level.coins.forEach((coin, index) => {
       if (this.character.isColliding(coin)) {
@@ -250,7 +154,7 @@ class World {
     });
   }
 
-  /** Checks collisions between the character and the end boss. */
+  /** Character vs. end boss (direct hit → heavy damage). */
   checkCollisionsByEndboss() {
     this.level.endboss.forEach((endboss) => {
       if (this.character.isColliding(endboss)) {
@@ -261,37 +165,22 @@ class World {
   }
 
   /**
-   * Draws multiple objects to the map.
-   * @param {Object[]} objects - Array of drawable objects.
+   * Draw multiple objects.
+   * @param {DrawableObject[]} objects
    */
-  addObjectsToMap(objects) {
-    objects.forEach((o) => {
-      this.addToMap(o);
-    });
-  }
+  addObjectsToMap(objects) { objects.forEach(o => this.addToMap(o)); }
 
   /**
-   * Draws a single object to the canvas.
-   * Handles flipping if the object is facing left.
-   *
-   * @param {DrawableObject} mo - Object to draw.
+   * Draw one object and flip if needed.
+   * @param {DrawableObject} mo
    */
   addToMap(mo) {
-    if (mo.otherDirection) {
-      this.flipImage(mo);
-    }
-
+    if (mo.otherDirection) this.flipImage(mo);
     mo.draw(this.ctx);
-
-    if (mo.otherDirection) {
-      this.flipImageBack(mo);
-    }
+    if (mo.otherDirection) this.flipImageBack(mo);
   }
 
-  /**
-   * Flips an object’s image horizontally.
-   * @param {DrawableObject} mo - Object to flip.
-   */
+  /** Flip horizontally (for left-facing). */
   flipImage(mo) {
     this.ctx.save();
     this.ctx.translate(mo.width, 0);
@@ -299,54 +188,33 @@ class World {
     mo.x = mo.x * -1;
   }
 
-  /**
-   * Restores an object’s image orientation after flipping.
-   * @param {DrawableObject} mo - Object to restore.
-   */
+  /** Restore orientation after flip. */
   flipImageBack(mo) {
     mo.x = mo.x * -1;
     this.ctx.restore();
   }
 
-  /**
-   * Collects a bottle when picked up by the character.
-   * @param {Object} bottle - The bottle object.
-   * @param {number} index - Index in the level's bottle array.
-   */
+  /** Collect bottle from level. */
   collectBottles(bottle, index) {
     this.bottles.push(bottle);
     this.level.bottles.splice(index, 1);
   }
 
-  /**
-   * Collects a coin when picked up by the character.
-   * @param {Object} coin - The coin object.
-   * @param {number} index - Index in the level's coin array.
-   */
+  /** Collect coin from level. */
   collectCoins(coin, index) {
     this.coins.push(coin);
     this.level.coins.splice(index, 1);
   }
 
   /**
-   * Deletes an enemy from the level after a short delay.
-   * @param {number} index - Index of the enemy to delete.
-   *
-   * ⚠️ Note: Uses `level1.enemies` directly, not `this.level.enemies`.
+   * Delete enemy (uses global level1 per original behavior).
+   * @param {number} index
    */
-  deleteEnemy(index) {
-    setTimeout(() => {
-      level1.enemies.splice(index, 1);
-    }, 400);
-  }
+  deleteEnemy(index) { setTimeout(() => { level1.enemies.splice(index, 1); }, 400); }
 
   /**
-   * Deletes a thrown bottle from the world after a short delay.
-   * @param {number} index - Index of the bottle to delete.
+   * Delete thrown bottle from active list.
+   * @param {number} index
    */
-  deleteBottle(index) {
-    setTimeout(() => {
-      this.throwableObject.splice(index, 1);
-    }, 100);
-  }
+  deleteBottle(index) { setTimeout(() => { this.throwableObject.splice(index, 1); }, 100); }
 }
