@@ -1,3 +1,5 @@
+// js/game.js
+
 let canvas;
 let world;
 let keyboard = new Keyboard();
@@ -9,259 +11,192 @@ let game_over_sound = new Audio("audio/game_over.mp3");
 
 background_sound.volume = 0.01;
 
+/** Shorthand for getElementById. */
+const $ = (id) => document.getElementById(id);
+
+/**
+ * Sets display style on an element by id.
+ * @param {string} id - Element id.
+ * @param {string} display - CSS display value.
+ */
+function setDisplay(id, display) {
+  $(id).style.display = display;
+}
+
 /**
  * Initializes the game:
- * - Starts the level setup.
- * - Creates the world instance.
- * - Activates mobile controls.
+ * - Builds level, world, and mobile controls.
  */
 function init() {
   startLevel();
-  canvas = document.getElementById("canvas");
+  canvas = $("canvas");
   world = new World(canvas, keyboard);
   mobileButtons();
 }
 
-/**
- * Keydown event listener:
- * Updates the keyboard object to reflect which keys are currently pressed.
- */
+/* ---------- Keyboard handling ---------- */
+
+/** Maps legacy keyCodes to keyboard flags (and mute toggle). */
+const keyMap = { 37: "LEFT", 38: "UP", 39: "RIGHT", 40: "DOWN", 32: "SPACE", 68: "D", 77: "M" };
+
 window.addEventListener("keydown", (e) => {
-  if (e.keyCode == 39) keyboard.RIGHT = true;
-  if (e.keyCode == 37) keyboard.LEFT = true;
-  if (e.keyCode == 38) keyboard.UP = true;
-  if (e.keyCode == 40) keyboard.DOWN = true;
-  if (e.keyCode == 32) keyboard.SPACE = true;
-  if (e.keyCode == 68) keyboard.D = true;
-  if (e.keyCode == 77) toggleMute(); // 'M' for mute toggle
+  const key = keyMap[e.keyCode];
+  if (!key) return;
+  if (key === "M") toggleMute();
+  else keyboard[key] = true;
 });
 
-/**
- * Keyup event listener:
- * Updates the keyboard object to reset key states.
- */
 window.addEventListener("keyup", (e) => {
-  if (e.keyCode == 39) keyboard.RIGHT = false;
-  if (e.keyCode == 37) keyboard.LEFT = false;
-  if (e.keyCode == 38) keyboard.UP = false;
-  if (e.keyCode == 40) keyboard.DOWN = false;
-  if (e.keyCode == 32) keyboard.SPACE = false;
-  if (e.keyCode == 68) keyboard.D = false;
+  const key = keyMap[e.keyCode];
+  if (!key || key === "M") return;
+  keyboard[key] = false;
 });
 
+/* ---------- Mobile touch controls ---------- */
+
 /**
- * Initializes mobile button controls:
- * Maps touchstart/touchend events to keyboard flags
- * (left, right, jump, throw).
+ * Wires touch buttons to keyboard flags (LEFT/RIGHT/SPACE/D).
  */
 function mobileButtons() {
-  document.getElementById("btnLeft").addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    keyboard.LEFT = true;
-  });
-  document.getElementById("btnLeft").addEventListener("touchend", (e) => {
-    e.preventDefault();
-    keyboard.LEFT = false;
-  });
-  document.getElementById("btnRight").addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    keyboard.RIGHT = true;
-  });
-  document.getElementById("btnRight").addEventListener("touchend", (e) => {
-    e.preventDefault();
-    keyboard.RIGHT = false;
-  });
-  document.getElementById("btnJump").addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    keyboard.SPACE = true;
-  });
-  document.getElementById("btnJump").addEventListener("touchend", (e) => {
-    e.preventDefault();
-    keyboard.SPACE = false;
-  });
-  document.getElementById("btnThrow").addEventListener("touchstart", (e) => {
-    e.preventDefault();
-    keyboard.D = true;
-  });
-  document.getElementById("btnThrow").addEventListener("touchend", (e) => {
-    e.preventDefault();
-    keyboard.D = false;
+  [
+    ["btnLeft", "LEFT"],
+    ["btnRight", "RIGHT"],
+    ["btnJump", "SPACE"],
+    ["btnThrow", "D"],
+  ].forEach(([id, flag]) => {
+    $(id).addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      keyboard[flag] = true;
+    });
+    $(id).addEventListener("touchend", (e) => {
+      e.preventDefault();
+      keyboard[flag] = false;
+    });
   });
 }
+
+/* ---------- Audio helpers ---------- */
 
 /**
- * Pauses all global sounds (background, win, game over) and resets their playback.
+ * Pauses background/win/game-over audio and resets playback head.
  */
 function pauseSounds() {
-  background_sound.pause();
-  background_sound.currentTime = 0;
-  win_sound.pause();
-  win_sound.currentTime = 0;
-  game_over_sound.pause();
-  game_over_sound.currentTime = 0;
+  [background_sound, win_sound, game_over_sound].forEach((s) => {
+    s.pause();
+    s.currentTime = 0;
+  });
 }
 
-/** Starts the game level setup. */
+/* ---------- Game lifecycle ---------- */
+
+/** Starts the level setup. */
 function startLevel() {
   initLevel();
 }
 
 /**
- * Starts the game:
- * - Hides start and end screens.
- * - Initializes the world.
- * - Plays background music.
+ * Starts the game, hides screens, and plays background music.
  */
 function startGame() {
-  let startScreen = document.getElementById("startScreen");
-  let endScreenWin = document.getElementById("endScreenWin");
-  let endScreenLose = document.getElementById("endScreenLose");
   init();
   background_sound.play();
-  startScreen.style.display = "none";
-  endScreenWin.style.display = "none";
-  endScreenLose.style.display = "none";
+  setDisplay("startScreen", "none");
+  setDisplay("endScreenWin", "none");
+  setDisplay("endScreenLose", "none");
 }
 
 /**
- * Restarts the game:
- * - Clears all intervals.
- * - Resets sounds.
- * - Reinitializes world and level.
+ * Restarts the game after clearing loops and resetting audio.
  */
 function restartGame() {
   clearAllIntervals();
   pauseSounds();
-  let endScreenWin = document.getElementById("endScreenWin");
-  let endScreenLose = document.getElementById("endScreenLose");
-  let startScreen = document.getElementById("startScreen");
-  endScreenWin.style.display = "none";
-  endScreenLose.style.display = "none";
-  startScreen.style.display = "none";
+  ["endScreenWin", "endScreenLose", "startScreen"].forEach((id) =>
+    setDisplay(id, "none")
+  );
   init();
   background_sound.play();
 }
 
 /**
- * Returns to the main menu:
- * - Clears intervals.
- * - Pauses sounds.
- * - Shows the start screen.
+ * Returns to the main menu and pauses audio.
  */
 function goToMenu() {
   clearAllIntervals();
   pauseSounds();
-  let startScreen = document.getElementById("startScreen");
-  let endScreenWin = document.getElementById("endScreenWin");
-  let endScreenLose = document.getElementById("endScreenLose");
-  endScreenWin.style.display = "none";
-  endScreenLose.style.display = "none";
-  startScreen.style.display = "block";
+  setDisplay("endScreenWin", "none");
+  setDisplay("endScreenLose", "none");
+  setDisplay("startScreen", "block");
 }
 
 /**
- * Opens the win screen:
- * - Stops active intervals.
- * - Pauses sounds.
- * - Plays win sound.
- * - Displays win screen.
+ * Shows win screen and plays win sound.
  */
 function openWinScreen() {
   clearAllIntervals();
   pauseSounds();
   background_sound.pause();
   win_sound.play();
-  let endScreenWin = document.getElementById("endScreenWin");
-  endScreenWin.style.display = "flex";
+  setDisplay("endScreenWin", "flex");
 }
 
 /**
- * Opens the lose screen:
- * - Stops active intervals.
- * - Pauses background.
- * - Plays game over sound.
- * - Displays lose screen.
+ * Shows lose screen and plays game-over sound.
  */
 function openLoseScreen() {
   clearAllIntervals();
   background_sound.pause();
   game_over_sound.play();
-  let endScreenLose = document.getElementById("endScreenLose");
-  endScreenLose.style.display = "flex";
+  setDisplay("endScreenLose", "flex");
 }
 
 /**
- * Clears all active intervals.
- * Used to fully stop all game loops.
+ * Clears all active intervals to stop running loops.
  */
 function clearAllIntervals() {
-  for (let i = 1; i < 9999; i++) {
-    window.clearInterval(i);
-  }
+  for (let i = 1; i < 9999; i++) window.clearInterval(i);
 }
 
 /**
- * Toggles mute state:
- * - Updates button text.
- * - Mutes/unmutes global sounds and audio managers.
+ * Toggles global mute state and updates UI + AudioManagers.
  */
 function toggleMute() {
-  const mobileMuteBtn = document.getElementById("muteBtn");
-
-  if (!isMuted) {
-    mobileMuteBtn.innerText = "UNMUTE - M";
-    background_sound.muted = true;
-    win_sound.muted = true;
-    game_over_sound.muted = true;
-    world.audioManager.muteSounds();
-    world.character.audioManager.muteSounds();
-    world.level.endboss.forEach((endboss) => {
-      endboss.audioManager.muteSounds();
-    });
-    isMuted = true;
-  } else {
-    mobileMuteBtn.innerText = "MUTE - M";
-    background_sound.muted = false;
-    win_sound.muted = false;
-    game_over_sound.muted = false;
-    world.audioManager.unmuteSounds();
-    world.character.audioManager.unmuteSounds();
-    world.level.endboss.forEach((endboss) => {
-      endboss.audioManager.unmuteSounds();
-    });
-    isMuted = false;
-  }
+  const btn = $("muteBtn");
+  isMuted = !isMuted;
+  btn.innerText = isMuted ? "UNMUTE - M" : "MUTE - M";
+  setMuted(isMuted);
 }
 
 /**
- * Adjusts game display based on screen orientation:
- * - Handles landscape/portrait modes.
- * - Toggles overlays and containers.
+ * Applies mute/unmute to global and in-world sounds.
+ * @param {boolean} muted - Whether sounds should be muted.
  */
-function checkOrientation() {
-  const landscapeScreen = document.getElementById("landscapeScreen");
-  const gameContainer = document.querySelector(".game-container");
-  const overlay = document.querySelector(".overlay");
-
-  if (window.innerWidth < 1200 && window.innerHeight < window.innerWidth) {
-    landscapeScreen.style.display = "none";
-    gameContainer.style.display = "block";
-    overlay.style.display = "flex";
-  } else if (
-    window.innerWidth < 1200 &&
-    window.innerHeight > window.innerWidth
-  ) {
-    landscapeScreen.style.display = "flex";
-    gameContainer.style.display = "none";
-    overlay.style.display = "flex";
-  } else {
-    landscapeScreen.style.display = "none";
-    gameContainer.style.display = "block";
-    overlay.style.display = "flex";
-  }
+function setMuted(muted) {
+  [background_sound, win_sound, game_over_sound].forEach((s) => (s.muted = muted));
+  const fn = muted ? "muteSounds" : "unmuteSounds";
+  world.audioManager[fn]();
+  world.character.audioManager[fn]();
+  world.level.endboss.forEach((eb) => eb.audioManager[fn]());
 }
 
-// Handle screen resize and orientation events.
+/* ---------- Orientation handling ---------- */
+
+/**
+ * Adjusts UI for narrow landscape/portrait screens; keeps overlay visible.
+ */
+function checkOrientation() {
+  const narrow = window.innerWidth < 1200;
+  const portrait = window.innerHeight > window.innerWidth;
+  if (narrow && portrait) {
+    setDisplay("landscapeScreen", "flex");
+    document.querySelector(".game-container").style.display = "none";
+  } else {
+    setDisplay("landscapeScreen", "none");
+    document.querySelector(".game-container").style.display = "block";
+  }
+  document.querySelector(".overlay").style.display = "flex";
+}
+
 window.addEventListener("resize", checkOrientation);
 window.addEventListener("orientationchange", checkOrientation);
 window.addEventListener("load", checkOrientation);

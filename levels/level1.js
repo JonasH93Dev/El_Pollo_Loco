@@ -1,88 +1,48 @@
+// levels/level1.js
+
 let level1;
 
 /**
- * Initializes level 1 of the game.
- *
- * Responsibilities:
- * - Creates a new {@link level} instance with all its entities.
- * - Populates the level with enemies, boss, collectibles, clouds, and background layers.
- *
- * Contents:
- * - Enemies: 5 normal chickens + 5 small chickens.
- * - End boss: 1.
- * - Coins: 8.
- * - Bottles: 8.
- * - Clouds: 5.
- * - Background: multiple repeating layers for parallax scrolling
- *   (air, third layer, second layer, first layer).
+ * Utility to create an array of N new instances.
+ * @template T
+ * @param {new () => T} Ctor - Class constructor.
+ * @param {number} n - Number of instances to create.
+ * @returns {T[]} Array with n new instances.
+ */
+function makeN(Ctor, n) {
+  return Array.from({ length: n }, () => new Ctor());
+}
+
+/**
+ * Builds the repeating background sequence for x ∈ [-719, 0, 719, 1438, 2157].
+ * Alternates layer variant 2,1,2,1,2 while air.png stays constant.
+ * @returns {BackgroundObject[]} Background objects in draw order.
+ */
+function buildBackground() {
+  const xs = [-719, 0, 719, 719 * 2, 719 * 3];
+  const out = [];
+  xs.forEach((x, i) => {
+    const v = i % 2 === 0 ? 2 : 1;
+    out.push(new BackgroundObject("img/5_background/layers/air.png", x));
+    out.push(new BackgroundObject(`img/5_background/layers/3_third_layer/${v}.png`, x));
+    out.push(new BackgroundObject(`img/5_background/layers/2_second_layer/${v}.png`, x));
+    out.push(new BackgroundObject(`img/5_background/layers/1_first_layer/${v}.png`, x));
+  });
+  return out;
+}
+
+/**
+ * Initializes level 1 with enemies, boss, collectibles, clouds, and background.
+ * Keeps counts identical: 5 Chickens, 5 Small Chickens, 1 Endboss, 8 Coins,
+ * 8 Bottles, 5 Clouds, and the same background tiling.
  */
 function initLevel() {
   level1 = new level(
-    // Enemies
-    [
-      new Chicken(),
-      new Chicken(),
-      new Chicken(),
-      new Chicken(),
-      new Chicken(),
-      new ChickenSmall(),
-      new ChickenSmall(),
-      new ChickenSmall(),
-      new ChickenSmall(),
-      new ChickenSmall(),
-    ],
-    // End boss
+    [...makeN(Chicken, 5), ...makeN(ChickenSmall, 5)],
     [new Endboss()],
-    // Coins
-    [
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-      new Coin(),
-    ],
-    // Bottles
-    [
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-      new Bottle(),
-    ],
-    // Clouds
-    [new Cloud(), new Cloud(), new Cloud(), new Cloud(), new Cloud()],
-    // Background layers (repeating every 719px)
-    [
-      new BackgroundObject("img/5_background/layers/air.png", -719),
-      new BackgroundObject("img/5_background/layers/3_third_layer/2.png", -719),
-      new BackgroundObject("img/5_background/layers/2_second_layer/2.png", -719),
-      new BackgroundObject("img/5_background/layers/1_first_layer/2.png", -719),
-
-      new BackgroundObject("img/5_background/layers/air.png", 0),
-      new BackgroundObject("img/5_background/layers/3_third_layer/1.png", 0),
-      new BackgroundObject("img/5_background/layers/2_second_layer/1.png", 0),
-      new BackgroundObject("img/5_background/layers/1_first_layer/1.png", 0),
-
-      new BackgroundObject("img/5_background/layers/air.png", 719),
-      new BackgroundObject("img/5_background/layers/3_third_layer/2.png", 719),
-      new BackgroundObject("img/5_background/layers/2_second_layer/2.png", 719),
-      new BackgroundObject("img/5_background/layers/1_first_layer/2.png", 719),
-
-      new BackgroundObject("img/5_background/layers/air.png", 719 * 2),
-      new BackgroundObject("img/5_background/layers/3_third_layer/1.png", 719 * 2),
-      new BackgroundObject("img/5_background/layers/2_second_layer/1.png", 719 * 2),
-      new BackgroundObject("img/5_background/layers/1_first_layer/1.png", 719 * 2),
-
-      new BackgroundObject("img/5_background/layers/air.png", 719 * 3),
-      new BackgroundObject("img/5_background/layers/3_third_layer/2.png", 719 * 3),
-      new BackgroundObject("img/5_background/layers/2_second_layer/2.png", 719 * 3),
-      new BackgroundObject("img/5_background/layers/1_first_layer/2.png", 719 * 3),
-    ]
+    makeN(Coin, 8),
+    makeN(Bottle, 12),
+    makeN(Cloud, 5),
+    buildBackground()
   );
 }
