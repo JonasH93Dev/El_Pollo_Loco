@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="./style.css" />
   <link rel="icon" href="./img/2_character_pepe/1_idle/idle/I-1.png" />
-
+  <link rel="stylesheet" href="./style.css" />
   <title>El pollo loco</title>
 
+  <!-- game classes -->
   <script src="./classes/sounds.class.js"></script>
   <script src="./classes/drawable-object.class.js"></script>
   <script src="./classes/movable-object.class.js"></script>
@@ -31,7 +30,6 @@
   <script src="./levels/level1.js"></script>
   <script src="./js/game.js"></script>
 </head>
-
 <body>
   <div class="game-container">
     <canvas id="canvas" width="720" height="480"></canvas>
@@ -47,44 +45,32 @@
 
       <div class="panel-moving">
         <div class="pannel-wrapper">
-          <button id="btnLeft">
-            <img src="./img/arrow_left.png" alt="LEFT" />
-          </button>
-          <button id="btnRight">
-            <img src="./img/arrow_right.png" alt="RIGHT" />
-          </button>
+          <button id="btnLeft"><img src="./img/arrow_left.png" alt="LEFT" /></button>
+          <button id="btnRight"><img src="./img/arrow_right.png" alt="RIGHT" /></button>
         </div>
         <div class="pannel-wrapper">
-          <button id="btnJump">
-            <img src="./img/spacebar.png" alt="SPACE" />
-          </button>
-          <button id="btnThrow">
-            <img src="./img/6_salsa_bottle/salsa_bottle.png" alt="D" />
-            D
-          </button>
+          <button id="btnJump"><img src="./img/spacebar.png" alt="SPACE" /></button>
+          <button id="btnThrow"><img src="./img/6_salsa_bottle/salsa_bottle.png" alt="D" />D</button>
         </div>
       </div>
     </div>
 
     <div id="startScreen" class="startscreen">
-      <!-- Rechts oben Links -->
-      <div class="startscreen-links">
-        <a href="privacy_policy.html">Privacy Policy</a>
-        <a href="datenschutz.html">Datenschutzerklärung</a>
+      <!-- left/right header links -->
+      <div class="startscreen-link-left"><a href="privacy_policy.html">Privacy Policy</a></div>
+      <div class="startscreen-link-right"><a href="datenschutz.html">Datenschutzerklärung</a></div>
+
+      <!-- centered CTAs -->
+      <div class="startscreen-cta">
+        <button id="btnStartGame" class="cta" onclick="startGame()">START</button>
+        <a class="cta" href="info.html">INFO</a>
       </div>
-      <button id="btnStartGame" class="button-start-game" onclick="startGame()">
-        START
-      </button>
     </div>
 
     <div id="endScreenWin" class="endscreen" style="display: none">
-      <div class="endscreen-link-container">
-        <a href="privacy_policy.html">Privacy Policy</a>
-        <a href="datenschutz.html">Datenschutzerklärung</a>
-      </div>
-      <div>
-        <img class="endscreen-img" src="./img/9_intro_outro_screens/win/won_2.png" alt="WIN" />
-      </div>
+      <div class="endscreen-link-left"><a href="privacy_policy.html">Privacy Policy</a></div>
+      <div class="endscreen-link-right"><a href="datenschutz.html">Datenschutzerklärung</a></div>
+      <div><img class="endscreen-img" src="./img/9_intro_outro_screens/win/won_2.png" alt="WIN" /></div>
       <div class="endscreen-button-container">
         <button onclick="goToMenu()">BACK TO MENU</button>
         <button onclick="restartGame()">RESTART</button>
@@ -92,13 +78,9 @@
     </div>
 
     <div id="endScreenLose" class="endscreen" style="display: none">
-      <div class="endscreen-link-container">
-        <a href="privacy_policy.html">Privacy Policy</a>
-        <a href="datenschutz.html">Datenschutzerklärung</a>
-      </div>
-      <div>
-        <img class="endscreen-img" src="./img/9_intro_outro_screens/game_over/game over!.png" alt="LOSE" />
-      </div>
+      <div class="endscreen-link-left"><a href="privacy_policy.html">Privacy Policy</a></div>
+      <div class="endscreen-link-right"><a href="datenschutz.html">Datenschutzerklärung</a></div>
+      <div><img class="endscreen-img" src="./img/9_intro_outro_screens/game_over/game over!.png" alt="LOSE" /></div>
       <div class="endscreen-button-container">
         <button onclick="goToMenu()">BACK TO MENU</button>
         <button onclick="restartGame()">RESTART</button>
@@ -107,9 +89,8 @@
   </div>
 
   <div id="landscapeScreen" class="landscapescreen" style="display: none">
-    <h2>PLEASE ROTATE YOUR PHONE/TABLET TO LANDSCAPE MODE</h2>
+    <h2>PLEASE ROTATE YOUR PHONE/TABLET</h2>
     <img src="./img/phone.png" alt="TURN PHONE" />
   </div>
 </body>
-
 </html>

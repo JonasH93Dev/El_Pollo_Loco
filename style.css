@@ -3,6 +3,7 @@
   src: url("fonts/Zabars.ttf") format("truetype");
 }
 
+/* General reset */
 * {
   box-sizing: border-box;
 }
@@ -29,7 +30,7 @@ button {
 a {
   margin: 8px;
   text-decoration: none;
-  color: white; /* bessere Sichtbarkeit */
+  color: white;
   font-size: 20px;
 }
 
@@ -53,9 +54,12 @@ li img {
 
 .game-container {
   position: relative;
-  box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
-    rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px,
-    rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+  box-shadow:
+    rgba(0, 0, 0, 0.25) 0px 54px 55px,
+    rgba(0, 0, 0, 0.12) 0px -12px 30px,
+    rgba(0, 0, 0, 0.12) 0px 4px 6px,
+    rgba(0, 0, 0, 0.17) 0px 12px 13px,
+    rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
 canvas {
@@ -65,15 +69,13 @@ canvas {
 
 .overlay {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
+/* Top bars */
 .panel-game {
   display: flex;
   justify-content: end;
@@ -84,8 +86,8 @@ canvas {
   justify-content: space-between;
 }
 
-.panel-moving button,
-.panel-game button {
+/* Mobile controls (simple style) */
+.panel-moving button {
   background-color: #ff9f00;
   border: 1px solid #ffde01;
   padding: 8px 16px;
@@ -105,72 +107,96 @@ canvas {
   padding: 16px;
 }
 
+/* Rotate overlay */
 .landscapescreen {
   background-color: #ff9f00;
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   text-align: center;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  background-image: url("img/cactus.png");
 }
 
 .landscapescreen img {
   height: 50px;
 }
 
+/* Start screen background */
 .startscreen {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
   background-image: url("img/9_intro_outro_screens/start/startscreen_2.png");
   background-position: center;
-  background-size: cover;
   background-size: 720px 480px;
 }
 
-/* Neue Startscreen-Links oben rechts */
-.startscreen-links {
+/* Header links (left/right) */
+.startscreen-link-left,
+.endscreen-link-left {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+}
+
+.startscreen-link-right,
+.endscreen-link-right {
   position: absolute;
   top: 10px;
   right: 20px;
-  display: flex;
-  gap: 16px;
 }
 
-.button-start-game {
-  background-color: #ffde01;
-  border: none;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
-    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-  border-radius: 12px;
-  font-size: 30px;
+/* Centered CTA row with equal-size buttons */
+.startscreen-cta {
   position: absolute;
-  top: 15%;
+  top: 12%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px 20px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 28px;
 }
 
-.button-start-game:hover {
-  background-color: greenyellow;
+/* CTA: identical size for START and INFO */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 180px;
+  /* smaller, equal width */
+  height: 60px;
+  /* smaller, equal height */
+  font-size: 28px;
+  /* balanced text size */
+  color: #fff;
+  background: linear-gradient(145deg, #28a745, #218838);
+  border-radius: 12px;
+  border: none;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, .8);
+  box-shadow: 0px 6px 0px #155724, 0 8px 16px rgba(0, 0, 0, .35);
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  text-align: center;
+  text-decoration: none;
 }
 
+.cta:hover {
+  background: linear-gradient(145deg, #dc3545, #c82333);
+  box-shadow: 0px 6px 0px #721c24, 0 12px 24px rgba(0, 0, 0, .45);
+  transform: translateY(-2px);
+}
+
+.cta:active {
+  transform: translateY(0);
+  box-shadow: 0px 5px 0px #721c24, 0 10px 18px rgba(0, 0, 0, .4);
+}
+
+/* End screen */
 .endscreen {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
   background-image: url("img/5_background/first_half_background.png");
   background-position: center;
-  background-size: cover;
   background-size: 720px 480px;
   display: flex;
   flex-direction: column;
@@ -179,12 +205,6 @@ canvas {
 
 .endscreen-img {
   max-width: 400px;
-}
-
-.endscreen-link-container {
-  display: flex;
-  gap: 30px;
-  margin-top: 10px;
 }
 
 .endscreen-button-container {
@@ -196,54 +216,137 @@ canvas {
 }
 
 .endscreen button {
-  background-color: #ffde01;
+  background: linear-gradient(145deg, #28a745, #218838);
   border: none;
-  box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
-    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
   border-radius: 12px;
   font-size: 30px;
-  padding: 10px 20px;
+  padding: 12px 26px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, .7);
+  box-shadow: 0px 6px 0px #155724, 0px 6px 15px rgba(0, 0, 0, .4);
+  transition: background .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
 .endscreen button:hover {
-  background-color: #ffe74a;
+  background: linear-gradient(145deg, #dc3545, #c82333);
+  box-shadow: 0px 4px 0px #721c24, 0px 6px 15px rgba(0, 0, 0, .5);
 }
 
-.overlay {
-  position: absolute;
+.endscreen button:active {
+  transform: translateY(1px);
+  box-shadow: 0px 3px 0px #721c24, 0px 4px 10px rgba(0, 0, 0, .45);
 }
 
-.privacy {
-  padding: 16px;
+/* In-game top-right buttons styled like CTAs but keep their size */
+.panel-game .pannel-wrapper button {
+  padding: 8px 16px;
+  background: linear-gradient(145deg, #28a745, #218838);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, .7);
+  box-shadow: 0px 6px 0px #155724, 0px 6px 15px rgba(0, 0, 0, .4);
+  transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
 }
 
-.info-arrow {
-  background-color: #ffe74a;
-  height: 35px;
-  padding: 4px;
-  position: fixed;
-  top: 40px;
-  right: 50px;
+.panel-game .pannel-wrapper button:hover {
+  background: linear-gradient(145deg, #dc3545, #c82333);
+  box-shadow: 0px 4px 0px #721c24, 0px 6px 15px rgba(0, 0, 0, .5);
 }
 
-@media (max-width: 720px) {
-  h1 {
-    display: none;
-  }
+.panel-game .pannel-wrapper button:active {
+  transform: translateY(1px);
+  box-shadow: 0px 3px 0px #721c24, 0px 4px 10px rgba(0, 0, 0, .45);
 }
 
-@media (max-height: 720px) {
-  h1 {
-    display: none;
-  }
+/* Docs (Privacy / Datenschutz / Info) */
+.doc-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 12px;
 }
 
+.doc-card {
+  width: min(900px, 92vw);
+  background: #fff;
+  color: #222;
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .25);
+  padding: 24px 28px;
+  line-height: 1.6;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.doc-card h1,
+.doc-card h2,
+.doc-card h3 {
+  font-family: "zabras", Arial, Helvetica, sans-serif;
+  color: #111;
+  margin: 18px 0 8px;
+}
+
+.doc-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.doc-back {
+  background: linear-gradient(145deg, #28a745, #218838);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-family: "zabras", Arial, Helvetica, sans-serif;
+  font-size: 18px;
+  text-decoration: none;
+  box-shadow: 0 4px 0 #155724, 0 6px 15px rgba(0, 0, 0, .25);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.doc-back:hover {
+  background: linear-gradient(145deg, #dc3545, #c82333);
+  box-shadow: 0 3px 0 #721c24, 0 6px 15px rgba(0, 0, 0, .35);
+}
+
+.doc-lang {
+  color: #666;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.doc-lang:hover {
+  color: #333;
+}
+
+.doc-card ul {
+  margin: 6px 0 12px 20px;
+}
+
+.doc-card li {
+  margin: 2px 0;
+}
+
+/* Responsive */
 @media only screen and (max-width: 720px) {
+
   canvas,
   .landscapescreen,
   .startscreen,
   .endscreen {
     width: 100%;
+  }
+
+  .cta {
+    width: 260px;
+    height: 74px;
+    font-size: 30px;
   }
 }
 
@@ -253,9 +356,13 @@ canvas {
   }
 }
 
-.panel-moving { display: none; }
-
+/* Mobile control visibility */
+.panel-moving {
+  display: none;
+}
 
 @media (max-width: 1200px) {
-  .panel-moving { display: flex; }
+  .panel-moving {
+    display: flex;
+  }
 }
