@@ -1,7 +1,6 @@
 /**
  * Centralized audio manager for handling game sound effects and background audio.
  * - Loads sounds, provides play/stop, and global mute/unmute.
- * - Non-initialized sounds (background, win, game over) remain as in original.
  */
 class AudioManager {
   constructor() {
@@ -27,10 +26,14 @@ class AudioManager {
       this.jump_sound, this.coin_sound, this.pop_sound,
       this.splash_sound, this.idle_sound
     ];
+
+    // gespeicherten Mute-Status sofort übernehmen
+    const savedMuted = JSON.parse(localStorage.getItem("isMuted") || "false");
+    this.allSounds.forEach(s => s.muted = savedMuted);
   }
 
   /** Mute/unmute all initialized sounds. */
-  muteSounds() { this.allSounds.forEach(s => s.muted = true); }
+  muteSounds()   { this.allSounds.forEach(s => s.muted = true); }
   unmuteSounds() { this.allSounds.forEach(s => s.muted = false); }
 
   /** Generic helpers. */
@@ -46,18 +49,12 @@ class AudioManager {
   stopPopSound() { this.stop(this.pop_sound); }
   playCoinSound() { this.play(this.coin_sound); }
   stopCoinSound() { this.stop(this.coin_sound); }
-  playBackgroundSound() { this.play(this.background_sound); } 
-  stopBackgroundSound() { this.stop(this.background_sound); }
   playChickenSound() { this.play(this.chicken_sound); }
   stopChickenSound() { this.stop(this.chicken_sound); }
   playEndbossSound() { this.play(this.endboss_sound); }
   stopEndbossSound() { this.stop(this.endboss_sound); }
-  playGameOverSound() { this.play(this.game_over_sound); } 
-  stopGameOverSound() { this.stop(this.game_over_sound); }
   playHurtSound() { this.play(this.hurt_sound); }
   stopHurtSound() { this.stop(this.hurt_sound); }
   playJumpSound() { this.play(this.jump_sound); }
   stopJumpSound() { this.stop(this.jump_sound); }
-  playWinSound() { this.play(this.win_sound); } 
-  stopWinSound() { this.stop(this.win_sound); }
 }
