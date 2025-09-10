@@ -148,27 +148,26 @@ canvas {
   right: 20px;
 }
 
-/* Centered CTA row with equal-size buttons */
+/* Start screen CTA buttons → jetzt mittig und untereinander */
 .startscreen-cta {
   position: absolute;
-  top: 12%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   display: flex;
-  gap: 28px;
+  flex-direction: column; /* untereinander */
+  align-items: center;
+  gap: 18px; /* Abstand zwischen START und INFO */
 }
 
-/* CTA: identical size for START and INFO */
+/* CTA: Standardstyle (für START) */
 .cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 180px;
-  /* smaller, equal width */
   height: 60px;
-  /* smaller, equal height */
   font-size: 28px;
-  /* balanced text size */
   color: #fff;
   background: linear-gradient(145deg, #28a745, #218838);
   border-radius: 12px;
@@ -178,6 +177,13 @@ canvas {
   transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
   text-align: center;
   text-decoration: none;
+}
+
+/* Info-Button kleiner */
+.startscreen-cta .cta:last-child {
+  min-width: 140px;
+  height: 48px;
+  font-size: 22px;
 }
 
 .cta:hover {
@@ -347,6 +353,12 @@ canvas {
     width: 260px;
     height: 74px;
     font-size: 30px;
+  }
+
+  .startscreen-cta .cta:last-child {
+    width: 200px;
+    height: 60px;
+    font-size: 26px;
   }
 }
 
