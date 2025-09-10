@@ -4,7 +4,7 @@
  */
 class MovableObject extends DrawableObject {
   /** Movement/physics & state. */
-  speed = 0.15; otherDirection = false; speedY = 0; acceleration = 1;
+  speed = 0.15; otherDirection = false; speedY = 0; acceleration = 1.75;
   energy = 100; lastHit = 0;
   offset = { top: 0, bottom: 0, left: 0, right: 0 };
 
@@ -82,6 +82,6 @@ class MovableObject extends DrawableObject {
 
   /** Move right by speed. */  moveRight() { this.x += this.speed; }
   /** Move left by speed. */   moveLeft()  { this.x -= this.speed; }
-  /** Jump upward. */          jump()      { this.speedY = 20; }
-  /** Bounce off enemy. */     jumpOfEnemy(){ this.speedY = 20; }
+  /** Jump upward. */          jump()      { this.speedY = 13; }
+  /** Bounce off enemy. */     jumpOfEnemy(){ this.speedY = 10; }
 }

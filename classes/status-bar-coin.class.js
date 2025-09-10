@@ -4,7 +4,7 @@
  * - Updates image based on a 0–100 percentage.
  */
 class StatusBarCoin extends DrawableObject {
-  x = 50; y = 50; width = 200; height = 60;
+  x = 0; y = 40; width = 200; height = 60;
 
   /** Status bar images for 0%, 20%, 40%, 60%, 80%, 100%. */
   IMAGES = [

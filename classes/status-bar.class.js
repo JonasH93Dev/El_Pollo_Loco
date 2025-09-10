@@ -5,7 +5,7 @@
  * - Updates image based on percentage.
  */
 class StatusBar extends DrawableObject {
-  x = 50; y = 0; width = 200; height = 60; percentage = 100;
+  x = 0; y = -10; width = 200; height = 60; percentage = 100;
 
   /** Health bar images for 0–100%. */
   IMAGES = [

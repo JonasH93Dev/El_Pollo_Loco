@@ -28,18 +28,24 @@ class World {
   /** Inject world reference into character. */
   setWorld() { this.character.world = this; }
 
-  /** Main logic loop (~10 FPS). */
-  run() {
-    setInterval(() => {
-      this.checkCollisions();
-      this.checkThrowObjects();
-      this.checkCollisionsBottles();
-      this.checkCollisionsCoins();
-      this.checkCollisionsByEndboss();
-      this.checkBottleCollisionWithAllEnemies();
-      this.jumpOnEnemy();
-    }, 100);
-  }
+ /** Haupt-Logikloops */
+run() {
+  // Schneller Loop (~50 FPS) → reaktionsschnell
+  setInterval(() => {
+    this.checkThrowObjects();                // Spieler wirft Flasche
+    this.checkCollisionsCoins();             // Münzen einsammeln
+    this.checkCollisionsBottles();           // Flaschen einsammeln
+    this.jumpOnEnemy();                      // Stomp von oben
+    this.checkBottleCollisionWithAllEnemies(); // Flasche trifft Gegner/Boss
+  }, 20);
+
+  // Langsamer Loop (~8 FPS) → Schaden vom Gegner/Boss
+  setInterval(() => {
+    this.checkCollisions();          // Spieler vs. normale Gegner
+    this.checkCollisionsByEndboss(); // Spieler vs. Endboss
+  }, 120);
+}
+
 
   /** Draws world & UI via rAF. */
   draw() {
