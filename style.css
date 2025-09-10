@@ -288,7 +288,6 @@ canvas {
 .doc-card h1,
 .doc-card h2,
 .doc-card h3 {
-  font-family: "zabras", Arial, Helvetica, sans-serif;
   color: #111;
   margin: 18px 0 8px;
 }
@@ -337,6 +336,24 @@ canvas {
 
 .doc-card li {
   margin: 2px 0;
+}
+
+/* Nur Impressum und Datenschutzerklärung oben */
+.startscreen-link-left a,
+.startscreen-link-right a,
+.endscreen-link-left a,
+.endscreen-link-right a {
+  font-family: Helvetica, Arial, sans-serif;
+}
+
+.controls-list li {
+  display: block;
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+#endScreenLose .endscreen-img {
+  max-width: 800px; /* größer als Win */
 }
 
 /* Responsive */
