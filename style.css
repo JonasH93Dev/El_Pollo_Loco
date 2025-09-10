@@ -88,8 +88,8 @@ canvas {
 
 /* Mobile controls (simple style) */
 .panel-moving button {
-  background-color: #ff9f00;
-  border: 1px solid #ffde01;
+  background-color: #28a745;
+  border: 1px solid black;
   padding: 8px 16px;
   border-radius: 12px;
   display: flex;
