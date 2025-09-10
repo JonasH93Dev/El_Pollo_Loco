@@ -1,20 +1,56 @@
+/**
+ * Base class for all movable game objects. Extends {@link DrawableObject}.
+ *
+ * Responsibilities:
+ * - Adds physics (gravity, vertical motion).
+ * - Provides collision detection.
+ * - Manages energy/health and reactions to hits.
+ * - Provides helper methods for movement (left, right, jump).
+ * - Supports animation frame cycling.
+ *
+ * Units & timing:
+ * - Positions and dimensions in pixels.
+ * - Gravity interval: 25 FPS (every 40 ms).
+ * - Energy is reduced in steps (5, 20, or 100) depending on source of damage.
+ */
 class MovableObject extends DrawableObject {
+  /** Horizontal movement speed (px per frame). */
   speed = 0.15;
+
+  /**
+   * Facing direction flag.
+   * @type {boolean} `true` if facing left, `false` if facing right.
+   */
   otherDirection = false;
+
+  /** Current vertical speed (used by gravity and jumps). */
   speedY = 0;
+
+  /** Downward acceleration applied during gravity. */
   acceleration = 1;
+
+  /** Current health/energy points. */
   energy = 100;
+
+  /** Timestamp (ms) of the last hit. */
   lastHit = 0;
+
+  /**
+   * Collision box offsets relative to sprite edges (px).
+   * Allows fine-tuning of hitboxes.
+   */
   offset = {
     top: 0,
     bottom: 0,
     left: 0,
     right: 0
-  }
+  };
 
   /**
-   * Applies gravity to the character, making it fall or move upwards.
-   * The method adjusts the vertical position of the character over time based on its speed.
+   * Applies gravity to this object.
+   * - Decreases vertical speed (`speedY`) over time.
+   * - Moves the object up or down by adjusting `y`.
+   * - Runs at 25 FPS.
    */
   applyGravity() {
     setInterval(() => {
@@ -26,12 +62,14 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Checks if the character is above the ground.
-   * @returns {boolean} - True if the character is above the ground (y < 140), or always true for throwable objects.
+   * Checks whether the object is above the ground level.
+   * - Normal objects: `true` if `y < 140`.
+   * - Throwable objects: always `true` (they always fall).
+   *
+   * @returns {boolean} True if above ground, otherwise false.
    */
   isAboveGround() {
     if (this instanceof ThrowableObject) {
-      // trhowable object should always fall
       return true;
     } else {
       return this.y < 140;
@@ -39,20 +77,24 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Checks if this object is colliding with another object.
-   * @param {Object} mo - The object to check for a collision with.
-   * @returns {boolean} - True if the objects are colliding, otherwise false.
+   * Checks whether this object is colliding with another.
+   *
+   * @param {Object} mo - The other object to test collision against.
+   * @returns {boolean} True if collision occurs, otherwise false.
    */
   isColliding(mo) {
-    return this.x + this.width - this.offset.right >= mo.x + mo.offset.left &&
-          this.y + this.height - this.offset.bottom >= mo.y + mo.offset.top &&
-          this.x + this.offset.left <= mo.x + mo.height - mo.offset.right &&
-          this.y + this.offset.top <= mo.y + mo.width - mo.offset.bottom;
+    return (
+      this.x + this.width - this.offset.right >= mo.x + mo.offset.left &&
+      this.y + this.height - this.offset.bottom >= mo.y + mo.offset.top &&
+      this.x + this.offset.left <= mo.x + mo.height - mo.offset.right &&
+      this.y + this.offset.top <= mo.y + mo.width - mo.offset.bottom
+    );
   }
 
   /**
-   * Reduces the character's energy by 5 when it gets hit.
-   * Ensures that energy doesn't go below zero and records the time of the hit.
+   * Applies damage from a normal hit (−5 energy).
+   * - Energy is clamped at minimum 0.
+   * - Records timestamp if still above 0.
    */
   hit() {
     this.energy -= 5;
@@ -64,15 +106,17 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Sets the character's energy to 0 when it collides with an enemy.
+   * Applies damage from colliding with an enemy.
+   * - Sets energy to 0 immediately.
    */
   hitEnemy() {
     this.energy = 0;
   }
 
   /**
-   * Reduces the character's energy by 20 when it gets hit by the endboss.
-   * Ensures that energy doesn't go below zero and records the time of the hit.
+   * Applies damage from being hit by the end boss (−20 energy).
+   * - Energy is clamped at minimum 0.
+   * - Records timestamp if still above 0.
    */
   hitEndboss() {
     this.energy -= 20;
@@ -84,23 +128,24 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Reduces the character's energy by 100 when it gets hit by the endboss.
-   * Ensures that energy doesn't go below zero and records the time of the hit.
+   * Applies damage from direct contact with the end boss (−100 energy).
+   * - Energy is clamped at minimum 0.
+   * - Records timestamp if still above 0.
    */
   hitByEndboss() {
-    // Logik, was passiert, wenn der Charakter den Endboss trifft
-    this.energy -= 100; // Beispiel: Energie um 100 reduzieren
+    this.energy -= 100;
     if (this.energy < 0) {
-      this.energy = 0; // Energie kann nicht unter 0 fallen
+      this.energy = 0;
     } else {
       this.lastHit = new Date().getTime();
     }
   }
 
   /**
-   * Determines if the character is currently hurt.
-   * Checks if less than one second has passed since the last hit.
-   * @returns {boolean} - True if the character is hurt (time since last hit < 1 second), otherwise false.
+   * Determines if the object is currently hurt.
+   * Hurt state lasts for 1 second after the last hit.
+   *
+   * @returns {boolean} True if hurt, otherwise false.
    */
   isHurt() {
     let timepassed = new Date().getTime() - this.lastHit;
@@ -109,48 +154,45 @@ class MovableObject extends DrawableObject {
   }
 
   /**
-   * Checks if the character is dead.
-   * @returns {boolean} - True if the character's energy is 0, otherwise false.
+   * Determines if the object is dead.
+   * @returns {boolean} True if energy is 0, otherwise false.
    */
   isDead() {
     return this.energy == 0;
   }
 
   /**
-   * Plays a walking animation by cycling through the provided image paths.
-   * @param {Array<string>} images - An array of image paths to display during the animation.
+   * Plays an animation sequence by cycling through image paths.
+   * - Advances `currentImage` index modulo the frame count.
+   * - Sets `img` to the next cached frame.
+   *
+   * @param {string[]} images - Array of image paths to cycle through.
    */
   playAnimation(images) {
-    let i = this.currentImage % images.length; // let i = 0 % 6; % = rest
+    let i = this.currentImage % images.length;
     let path = images[i];
     this.img = this.imageCache[path];
     this.currentImage++;
   }
 
-  /**
-   * Moves the character to the right by a specified speed.
-   */
+  /** Moves the object right by its `speed`. */
   moveRight() {
     this.x += this.speed;
   }
 
-  /**
-   * Moves the character to the left by a specified speed.
-   */
+  /** Moves the object left by its `speed`. */
   moveLeft() {
     this.x -= this.speed;
   }
 
-  /**
-   * Makes the character jump by setting its vertical speed.
-   */
+  /** Initiates a jump by setting upward vertical speed. */
   jump() {
     this.speedY = 20;
   }
 
   /**
-   * Makes the character jump off of an enemy by setting its vertical speed.
-   * The jump of an enemy could be a special mechanic, hence a separate function.
+   * Initiates a bounce/jump off an enemy.
+   * Same as {@link jump}, but separated for clarity of game mechanics.
    */
   jumpOfEnemy() {
     this.speedY = 20;

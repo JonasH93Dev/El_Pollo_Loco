@@ -1,16 +1,51 @@
+/**
+ * Throwable bottle object. Extends {@link MovableObject}.
+ *
+ * Responsibilities:
+ * - Simulates bottle throw with gravity and horizontal motion.
+ * - Cycles through rotation frames while airborne.
+ * - Switches to splash animation when broken (ground impact or enemy collision).
+ * - Plays splash sound when hitting the ground.
+ *
+ * Units & timing:
+ * - Position/dimensions in pixels.
+ * - Throw interval: every 10 ms (horizontal motion & ground check).
+ * - Animation interval: every 50 ms (rotation/splash frames).
+ * - Gravity interval inherited from {@link MovableObject} (~25 FPS).
+ *
+ * Notes:
+ * - `stopBottleAnimate()` calls `clearInterval(this.applyGravity)`,
+ *   but `applyGravity()` does not store its interval ID, so this has no effect.
+ * - The bottle is hidden after breaking by moving its `x` to -5000.
+ */
 class ThrowableObject extends MovableObject {
+  /** Width of the bottle (px). */
   width = 60;
+
+  /** Height of the bottle (px). */
   height = 60;
+
+  /** Flag indicating whether the bottle is broken. */
   isBroken = false;
+
+  /** Interval ID for throw logic (movement + ground check). */
   intervalThrow;
+
+  /** Interval ID for animation loop (rotation or splash). */
   intervalBottle;
+
+  /**
+   * Collision box offsets relative to sprite edges (px).
+   * Shrinks hitbox to better match the visible bottle.
+   */
   offset = {
-    top: 10, 
+    top: 10,
     bottom: 10,
     left: 10,
     right: 10
-};
+  };
 
+  /** Frames for bottle rotation (airborne state). */
   IMAGES_BOTTLE_ROTATION = [
     "img/6_salsa_bottle/bottle_rotation/1_bottle_rotation.png",
     "img/6_salsa_bottle/bottle_rotation/2_bottle_rotation.png",
@@ -18,6 +53,7 @@ class ThrowableObject extends MovableObject {
     "img/6_salsa_bottle/bottle_rotation/4_bottle_rotation.png",
   ];
 
+  /** Frames for bottle splash animation (ground impact). */
   IMAGES_BOTTLE_SPLASH = [
     "img/6_salsa_bottle/bottle_rotation/bottle_splash/1_bottle_splash.png",
     "img/6_salsa_bottle/bottle_rotation/bottle_splash/2_bottle_splash.png",
@@ -28,9 +64,10 @@ class ThrowableObject extends MovableObject {
   ];
 
   /**
-   * Creates a new Bottle instance.
-   * @param {number} x - The x-coordinate of the bottle.
-   * @param {number} y - The y-coordinate of the bottle.
+   * Creates a new throwable bottle at the given position.
+   *
+   * @param {number} x - Initial X position.
+   * @param {number} y - Initial Y position.
    */
   constructor(x, y) {
     super().loadImage(this.IMAGES_BOTTLE_ROTATION[0]);
@@ -42,16 +79,17 @@ class ThrowableObject extends MovableObject {
     this.animate();
   }
 
-  /**
-   * Loads all images for the bottle's rotation and splash animation.
-   */
+  /** Preloads all rotation and splash animation frames into cache. */
   loadAllImages() {
     this.loadImages(this.IMAGES_BOTTLE_ROTATION);
     this.loadImages(this.IMAGES_BOTTLE_SPLASH);
   }
 
   /**
-   * Simulates the bottle being thrown and falling.
+   * Initiates the throw:
+   * - Sets vertical speed (upwards).
+   * - Applies gravity (from parent).
+   * - Starts horizontal motion and ground check loop (every 10 ms).
    */
   throw() {
     this.speedY = 15;
@@ -67,7 +105,11 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Stops the bottle's animations.
+   * Stops throw and animation intervals.
+   *
+   * Notes:
+   * - `clearInterval(this.applyGravity)` has no effect since `applyGravity`
+   *   doesn’t store its interval ID. Gravity will continue unless refactored.
    */
   stopBottleAnimate() {
     clearInterval(this.applyGravity);
@@ -75,7 +117,9 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Handles the bottle's animation (rotation or splash based on state).
+   * Handles bottle animation:
+   * - Rotation while unbroken.
+   * - Splash animation when broken and above ground.
    */
   animate() {
     this.intervalBottle = setInterval(() => {
@@ -88,7 +132,10 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Checks if the bottle has hit the ground and plays splash sound.
+   * Ground collision check:
+   * - If Y ≥ 360, marks bottle as broken.
+   * - Plays splash sound.
+   * - Moves bottle off-screen after 100 ms.
    */
   bottleOnTheGround() {
     if (this.y >= 360) {
@@ -101,7 +148,8 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Checks if the bottle collides with any enemies and breaks.
+   * Checks collision with enemies and breaks bottle on impact.
+   * Iterates over `world.enemies` and tests each with {@link isColliding}.
    */
   bottleHitEnemys() {
     world.enemies.forEach((enemy) => {

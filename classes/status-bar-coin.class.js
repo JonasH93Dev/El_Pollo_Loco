@@ -1,9 +1,29 @@
+/**
+ * Status bar that visualizes the number of collected coins.
+ * Extends {@link DrawableObject}.
+ *
+ * Responsibilities:
+ * - Preloads status bar images representing different fill levels.
+ * - Updates the displayed image according to a percentage value (0–100).
+ *
+ * Notes:
+ * - Images are cached in `imageCache` for efficient reuse.
+ * - Percentage thresholds: 0, 20, 40, 60, 80, 100.
+ */
 class StatusBarCoin extends DrawableObject {
+  /** X position of the status bar (px). */
   x = 50;
+
+  /** Y position of the status bar (px). */
   y = 50;
+
+  /** Width of the status bar (px). */
   width = 200;
+
+  /** Height of the status bar (px). */
   height = 60;
 
+  /** Status bar images for 0%, 20%, 40%, 60%, 80%, and 100%. */
   IMAGES = [
     "img/7_statusbars/1_statusbar/1_statusbar_coin/blue/0.png",
     "img/7_statusbars/1_statusbar/1_statusbar_coin/blue/20.png",
@@ -14,8 +34,9 @@ class StatusBarCoin extends DrawableObject {
   ];
 
   /**
-   * Initializes the ProgressImage instance.
-   * Loads all images into the cache and sets the initial display to 100%.
+   * Creates a new coin status bar:
+   * - Loads all bar images into the cache.
+   * - Initializes the display with 0%.
    */
   constructor() {
     super();
@@ -24,8 +45,9 @@ class StatusBarCoin extends DrawableObject {
   }
 
   /**
-   * Sets the current percentage and updates the image accordingly.
-   * @param {number} percentage - The percentage to set (0 to 100).
+   * Updates the current percentage and switches the image accordingly.
+   *
+   * @param {number} percentage - Value between 0 and 100 representing fill level.
    */
   setPercentage(percentage) {
     this.percentage = percentage;
@@ -34,8 +56,9 @@ class StatusBarCoin extends DrawableObject {
   }
 
   /**
-   * Determines the appropriate image index based on the current percentage.
-   * @returns {number} - The index of the image in the IMAGES array.
+   * Resolves which image index corresponds to the current percentage.
+   *
+   * @returns {number} Index of the appropriate image in {@link IMAGES}.
    */
   resolveImageIndex() {
     if (this.percentage == 100) {

@@ -1,8 +1,14 @@
+/* =========================
+   FONT IMPORT
+========================= */
 @font-face {
   font-family: "zabras";
   src: url("fonts/Zabars.ttf") format("truetype");
 }
 
+/* =========================
+   GLOBAL STYLES
+========================= */
 * {
   box-sizing: border-box;
 }
@@ -51,6 +57,9 @@ li img {
   height: 30px;
 }
 
+/* =========================
+   GAME CONTAINER & CANVAS
+========================= */
 .game-container {
   position: relative;
   box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px,
@@ -63,6 +72,9 @@ canvas {
   display: block;
 }
 
+/* =========================
+   OVERLAYS & PANELS
+========================= */
 .overlay {
   position: absolute;
   top: 0;
@@ -105,6 +117,9 @@ canvas {
   padding: 16px;
 }
 
+/* =========================
+   LANDSCAPE SCREEN WARNING
+========================= */
 .landscapescreen {
   background-color: #ff9f00;
   position: absolute;
@@ -123,6 +138,9 @@ canvas {
   height: 50px;
 }
 
+/* =========================
+   START SCREEN
+========================= */
 .startscreen {
   position: absolute;
   top: 0;
@@ -153,6 +171,9 @@ canvas {
   background-color: greenyellow;
 }
 
+/* =========================
+   END SCREENS (WIN / LOSE)
+========================= */
 .endscreen {
   position: absolute;
   top: 0;
@@ -199,10 +220,9 @@ canvas {
   background-color: #ffe74a;
 }
 
-.overlay {
-  position: absolute;
-}
-
+/* =========================
+   ADDITIONAL STYLES
+========================= */
 .privacy {
   padding: 16px;
 }
@@ -216,6 +236,9 @@ canvas {
   right: 50px;
 }
 
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
 @media (max-width: 720px) {
   h1 {
     display: none;

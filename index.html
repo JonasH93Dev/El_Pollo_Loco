@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="./style.css" />
     <title>El pollo loco</title>
 
+    <!-- Class imports -->
     <script src="./classes/sounds.class.js"></script>
     <script src="./classes/drawable-object.class.js"></script>
     <script src="./classes/movable-object.class.js"></script>
@@ -25,16 +26,24 @@
     <script src="./classes/level.class.js"></script>
     <script src="./classes/throwable-object.class.js"></script>
     <script src="./classes/endboss.class.js"></script>
+
+    <!-- Level definitions -->
     <script src="./levels/level1.js"></script>
+
+    <!-- Main game logic -->
     <script src="./js/game.js"></script>
   </head>
   <body>
     <h1>El pollo loco</h1>
 
+    <!-- Game container with canvas and overlays -->
     <div class="game-container">
+      <!-- Main canvas where the game is rendered -->
       <canvas id="canvas" width="720" height="480"></canvas>
 
+      <!-- Overlay with in-game controls (UI and mobile buttons) -->
       <div class="overlay" style="display: none">
+        <!-- Game control panel (restart, mute, menu) -->
         <div class="panel-game">
           <div class="pannel-wrapper">
             <button onclick="restartGame()">RESTART</button>
@@ -43,27 +52,32 @@
           </div>
         </div>
 
+        <!-- Mobile movement and action buttons -->
         <div class="panel-moving">
           <div class="pannel-wrapper">
             <button id="btnLeft">
-              <img src="./img/arrow_left.png" alt="RIGHT" />
+              <img src="./img/arrow_left.png" alt="LEFT" />
             </button>
             <button id="btnRight">
-              <img src="./img/arrow_right.png" alt="LEFT" />
+              <img src="./img/arrow_right.png" alt="RIGHT" />
             </button>
           </div>
           <div class="pannel-wrapper">
             <button id="btnJump">
-              <img src="./img/spacebar.png" alt="SPACE" />
+              <img src="./img/spacebar.png" alt="JUMP" />
             </button>
             <button id="btnThrow">
-              <img src="./img/6_salsa_bottle/salsa_bottle.png" alt="SPACE" />
+              <img
+                src="./img/6_salsa_bottle/salsa_bottle.png"
+                alt="THROW BOTTLE"
+              />
               D
             </button>
           </div>
         </div>
       </div>
 
+      <!-- Start screen -->
       <div id="startScreen" class="startscreen">
         <a href="privacy_policy.html">Privacy Policy</a>
         <a href="datenschutz.html">Datenschutzerklärung</a>
@@ -75,6 +89,8 @@
           START
         </button>
       </div>
+
+      <!-- Win screen -->
       <div id="endScreenWin" class="endscreen" style="display: none">
         <div class="endscreen-link-container">
           <a href="privacy_policy.html">Privacy Policy</a>
@@ -93,6 +109,7 @@
         </div>
       </div>
 
+      <!-- Lose screen -->
       <div id="endScreenLose" class="endscreen" style="display: none">
         <div class="endscreen-link-container">
           <a href="privacy_policy.html">Privacy Policy</a>
@@ -111,8 +128,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Orientation screen (shown when device is not in landscape) -->
     <div id="landscapeScreen" class="landscapescreen" style="display: none">
-      <h2>PLEASE ROTATE YOUR PHONE/TABLET TO LANDSAPE MODE</h2>
+      <h2>PLEASE ROTATE YOUR PHONE/TABLET TO LANDSCAPE MODE</h2>
       <img src="./img/phone.png" alt="TURN PHONE" />
     </div>
   </body>

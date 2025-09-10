@@ -10,7 +10,10 @@ let game_over_sound = new Audio("audio/game_over.mp3");
 background_sound.volume = 0.01;
 
 /**
- * Initializes the game by setting up the canvas, world, and mobile controls.
+ * Initializes the game:
+ * - Starts the level setup.
+ * - Creates the world instance.
+ * - Activates mobile controls.
  */
 function init() {
   startLevel();
@@ -20,70 +23,36 @@ function init() {
 }
 
 /**
- * Event listener for keydown events. Updates the keyboard object with key states.
+ * Keydown event listener:
+ * Updates the keyboard object to reflect which keys are currently pressed.
  */
 window.addEventListener("keydown", (e) => {
-  if (e.keyCode == 39) {
-    keyboard.RIGHT = true;
-  }
-
-  if (e.keyCode == 37) {
-    keyboard.LEFT = true;
-  }
-
-  if (e.keyCode == 38) {
-    keyboard.UP = true;
-  }
-
-  if (e.keyCode == 40) {
-    keyboard.DOWN = true;
-  }
-
-  if (e.keyCode == 32) {
-    keyboard.SPACE = true;
-  }
-
-  if (e.keyCode == 68) {
-    keyboard.D = true;
-  }
-
-  if (e.keyCode == 77) {
-    // 'M' for Mute
-    toggleMute();
-  }
+  if (e.keyCode == 39) keyboard.RIGHT = true;
+  if (e.keyCode == 37) keyboard.LEFT = true;
+  if (e.keyCode == 38) keyboard.UP = true;
+  if (e.keyCode == 40) keyboard.DOWN = true;
+  if (e.keyCode == 32) keyboard.SPACE = true;
+  if (e.keyCode == 68) keyboard.D = true;
+  if (e.keyCode == 77) toggleMute(); // 'M' for mute toggle
 });
 
 /**
- * Event listener for keyup events. Updates the keyboard object to reset key states.
+ * Keyup event listener:
+ * Updates the keyboard object to reset key states.
  */
 window.addEventListener("keyup", (e) => {
-  if (e.keyCode == 39) {
-    keyboard.RIGHT = false;
-  }
-
-  if (e.keyCode == 37) {
-    keyboard.LEFT = false;
-  }
-
-  if (e.keyCode == 38) {
-    keyboard.UP = false;
-  }
-
-  if (e.keyCode == 40) {
-    keyboard.DOWN = false;
-  }
-
-  if (e.keyCode == 32) {
-    keyboard.SPACE = false;
-  }
-
-  if (e.keyCode == 68) {
-    keyboard.D = false;
-  }
+  if (e.keyCode == 39) keyboard.RIGHT = false;
+  if (e.keyCode == 37) keyboard.LEFT = false;
+  if (e.keyCode == 38) keyboard.UP = false;
+  if (e.keyCode == 40) keyboard.DOWN = false;
+  if (e.keyCode == 32) keyboard.SPACE = false;
+  if (e.keyCode == 68) keyboard.D = false;
 });
 
 /**
- * Sets up mobile button controls for left, right, jump, and throw actions.
+ * Initializes mobile button controls:
+ * Maps touchstart/touchend events to keyboard flags
+ * (left, right, jump, throw).
  */
 function mobileButtons() {
   document.getElementById("btnLeft").addEventListener("touchstart", (e) => {
@@ -121,7 +90,7 @@ function mobileButtons() {
 }
 
 /**
- * Pauses all sounds in the game (background, win, game over).
+ * Pauses all global sounds (background, win, game over) and resets their playback.
  */
 function pauseSounds() {
   background_sound.pause();
@@ -132,15 +101,16 @@ function pauseSounds() {
   game_over_sound.currentTime = 0;
 }
 
-/**
- * Starts the game level.
- */
+/** Starts the game level setup. */
 function startLevel() {
   initLevel();
 }
 
 /**
- * Starts the game, hiding the start screen and showing the game world.
+ * Starts the game:
+ * - Hides start and end screens.
+ * - Initializes the world.
+ * - Plays background music.
  */
 function startGame() {
   let startScreen = document.getElementById("startScreen");
@@ -154,7 +124,10 @@ function startGame() {
 }
 
 /**
- * Restarts the game, resetting game states and sounds.
+ * Restarts the game:
+ * - Clears all intervals.
+ * - Resets sounds.
+ * - Reinitializes world and level.
  */
 function restartGame() {
   clearAllIntervals();
@@ -170,7 +143,10 @@ function restartGame() {
 }
 
 /**
- * Navigates back to the main menu, showing the start screen.
+ * Returns to the main menu:
+ * - Clears intervals.
+ * - Pauses sounds.
+ * - Shows the start screen.
  */
 function goToMenu() {
   clearAllIntervals();
@@ -184,7 +160,11 @@ function goToMenu() {
 }
 
 /**
- * Displays the win screen and plays the win sound.
+ * Opens the win screen:
+ * - Stops active intervals.
+ * - Pauses sounds.
+ * - Plays win sound.
+ * - Displays win screen.
  */
 function openWinScreen() {
   clearAllIntervals();
@@ -196,7 +176,11 @@ function openWinScreen() {
 }
 
 /**
- * Displays the lose screen and plays the game over sound.
+ * Opens the lose screen:
+ * - Stops active intervals.
+ * - Pauses background.
+ * - Plays game over sound.
+ * - Displays lose screen.
  */
 function openLoseScreen() {
   clearAllIntervals();
@@ -207,7 +191,8 @@ function openLoseScreen() {
 }
 
 /**
- * Clears all active intervals to stop any running loops.
+ * Clears all active intervals.
+ * Used to fully stop all game loops.
  */
 function clearAllIntervals() {
   for (let i = 1; i < 9999; i++) {
@@ -216,7 +201,9 @@ function clearAllIntervals() {
 }
 
 /**
- * Toggles mute on and off, adjusting all sounds accordingly.
+ * Toggles mute state:
+ * - Updates button text.
+ * - Mutes/unmutes global sounds and audio managers.
  */
 function toggleMute() {
   const mobileMuteBtn = document.getElementById("muteBtn");
@@ -247,7 +234,9 @@ function toggleMute() {
 }
 
 /**
- * Checks the screen orientation and adjusts the display accordingly.
+ * Adjusts game display based on screen orientation:
+ * - Handles landscape/portrait modes.
+ * - Toggles overlays and containers.
  */
 function checkOrientation() {
   const landscapeScreen = document.getElementById("landscapeScreen");
@@ -272,7 +261,7 @@ function checkOrientation() {
   }
 }
 
-// Event listeners for screen resize and orientation change.
+// Handle screen resize and orientation events.
 window.addEventListener("resize", checkOrientation);
 window.addEventListener("orientationchange", checkOrientation);
 window.addEventListener("load", checkOrientation);

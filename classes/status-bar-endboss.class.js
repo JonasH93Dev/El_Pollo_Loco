@@ -1,10 +1,33 @@
+/**
+ * Status bar that visualizes the end boss's health.
+ * Extends {@link DrawableObject}.
+ *
+ * Responsibilities:
+ * - Preloads status bar images representing health levels.
+ * - Updates the displayed image according to a percentage value (0–100).
+ *
+ * Notes:
+ * - Images are cached in `imageCache` for efficient reuse.
+ * - Percentage thresholds: 0, 20, 40, 60, 80, 100.
+ * - Starts fully filled (100%).
+ */
 class StatusBarEndboss extends DrawableObject {
+  /** X position of the status bar (px). */
   x = 500;
+
+  /** Y position of the status bar (px). */
   y = 75;
+
+  /** Width of the status bar (px). */
   width = 200;
+
+  /** Height of the status bar (px). */
   height = 60;
+
+  /** Current health percentage (0–100). */
   percentage = 100;
 
+  /** Status bar images for 0%, 20%, 40%, 60%, 80%, and 100%. */
   IMAGES = [
     "img/7_statusbars/2_statusbar_endboss/orange/orange0.png",
     "img/7_statusbars/2_statusbar_endboss/orange/orange20.png",
@@ -15,8 +38,9 @@ class StatusBarEndboss extends DrawableObject {
   ];
 
   /**
-   * Initializes the ProgressImage instance.
-   * Loads all images into the cache and sets the initial display to 100%.
+   * Creates a new end boss status bar:
+   * - Loads all bar images into the cache.
+   * - Initializes the display with 100%.
    */
   constructor() {
     super();
@@ -25,8 +49,9 @@ class StatusBarEndboss extends DrawableObject {
   }
 
   /**
-   * Updates the percentage and sets the corresponding image.
-   * @param {number} percentage - The progress or health level, ranging from 0 to 100.
+   * Updates the current percentage and switches the image accordingly.
+   *
+   * @param {number} percentage - Value between 0 and 100 representing health level.
    */
   setPercentage(percentage) {
     this.percentage = percentage;
@@ -35,8 +60,9 @@ class StatusBarEndboss extends DrawableObject {
   }
 
   /**
-   * Determines the index of the image to display based on the percentage.
-   * @returns {number} - Index of the appropriate image for the current percentage.
+   * Resolves which image index corresponds to the current percentage.
+   *
+   * @returns {number} Index of the appropriate image in {@link IMAGES}.
    */
   resolveImageIndex() {
     if (this.percentage == 100) {

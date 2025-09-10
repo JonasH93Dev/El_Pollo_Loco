@@ -1,14 +1,43 @@
+/**
+ * End boss enemy that extends {@link MovableObject}.
+ *
+ * Responsibilities:
+ * - Loads and cycles through animations for walking, alert, attack, hurt, and dead states.
+ * - Switches state based on energy level, world conditions, and death flag.
+ * - Triggers sounds via `AudioManager`.
+ * - Signals win screen when defeated.
+ *
+ * Units & timing:
+ * - Position/dimensions in pixels.
+ * - Animation interval: every 100 ms (~10 FPS).
+ *
+ * Notes:
+ * - State evaluation order: alert → dead → hurt → attack.
+ * - Uses a fixed X spawn position (2500 px).
+ * - Speed is dynamically modified per state.
+ */
 class Endboss extends MovableObject {
+  /** Sprite height (px). */
   height = 400;
+
+  /** Sprite width (px). */
   width = 300;
+
+  /** Y position on canvas (px). */
   y = 50;
+
+  /**
+   * Collision box offsets relative to sprite edges (px).
+   * Adjusted so the hitbox better matches the visible character.
+   */
   offset = {
     top: 80,
     bottom: 80,
     left: 60,
     right: 10
-};
+  };
 
+  /** Frames for walking animation. */
   IMAGES_WALKING = [
     "img/4_enemie_boss_chicken/2_alert/G5.png",
     "img/4_enemie_boss_chicken/2_alert/G6.png",
@@ -20,6 +49,7 @@ class Endboss extends MovableObject {
     "img/4_enemie_boss_chicken/2_alert/G12.png",
   ];
 
+  /** Frames for alert animation (same as walking frames here). */
   IMAGES_ALERT = [
     "img/4_enemie_boss_chicken/2_alert/G5.png",
     "img/4_enemie_boss_chicken/2_alert/G6.png",
@@ -31,6 +61,7 @@ class Endboss extends MovableObject {
     "img/4_enemie_boss_chicken/2_alert/G12.png",
   ];
 
+  /** Frames for attack animation. */
   IMAGES_ATTACK = [
     "img/4_enemie_boss_chicken/3_attack/G13.png",
     "img/4_enemie_boss_chicken/3_attack/G14.png",
@@ -42,12 +73,14 @@ class Endboss extends MovableObject {
     "img/4_enemie_boss_chicken/3_attack/G20.png",
   ];
 
+  /** Frames for hurt animation. */
   IMAGES_HURT = [
     "img/4_enemie_boss_chicken/4_hurt/G21.png",
     "img/4_enemie_boss_chicken/4_hurt/G22.png",
     "img/4_enemie_boss_chicken/4_hurt/G23.png",
   ];
 
+  /** Frames for death animation. */
   IMAGES_DEAD = [
     "img/4_enemie_boss_chicken/5_dead/G24.png",
     "img/4_enemie_boss_chicken/5_dead/G25.png",
@@ -55,8 +88,13 @@ class Endboss extends MovableObject {
   ];
 
   /**
-   * Creates an instance of the end boss.
-   * Initializes the end boss with the first walking image, audio manager, and properties such as position and speed.
+   * Creates an instance of the end boss:
+   * - Loads the initial image (first walking frame).
+   * - Instantiates the audio manager.
+   * - Preloads all animation frames.
+   * - Sets starting position (X = 2500).
+   * - Sets base speed (0.5).
+   * - Starts the animation loop.
    */
   constructor() {
     super().loadImage(this.IMAGES_WALKING[0]);
@@ -68,7 +106,12 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Loads all images for the end boss (walking, dead, hurt, attack, alert).
+   * Preloads all animation frames:
+   * - Walking
+   * - Dead
+   * - Hurt
+   * - Attack
+   * - Alert
    */
   loadAllImages() {
     this.loadImages(this.IMAGES_WALKING);
@@ -79,8 +122,8 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Animates the end boss by calling its movement and state-based animations.
-   * This is repeatedly called via an interval to update the animation.
+   * Main animation loop, called every 100 ms (~10 FPS).
+   * Updates movement and state-based animation.
    */
   animate() {
     let intervalEndboss = setInterval(() => {
@@ -90,8 +133,11 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Updates the end boss's state, switching between attack, hurt, walking, and dead states.
-   * This method checks the health and other conditions to determine the appropriate animation.
+   * Evaluates and updates the end boss's state:
+   * - Alert (if world flag set).
+   * - Dead (triggers win screen).
+   * - Hurt (if energy ≤ 80 and hurt flag).
+   * - Attack (if energy ≤ 80 and not dead).
    */
   endbossAnimationDeadWalkHurtAttack() {
     this.endbossIsAlert();
@@ -106,7 +152,10 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Moves the end boss left and plays the walking animation.
+   * Default movement behavior:
+   * - Stops any ongoing boss sound.
+   * - Moves left at current speed.
+   * - Plays walking animation.
    */
   endbossMove() {
     this.audioManager.stopEndbossSound();
@@ -115,7 +164,11 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Triggered when the end boss is hurt. Changes its speed, plays the hurt animation, and plays a sound.
+   * Hurt state:
+   * - Plays end boss sound.
+   * - Temporarily increases speed to 8.
+   * - Moves left.
+   * - Plays hurt animation.
    */
   endbossIsHurt() {
     this.audioManager.playEndbossSound();
@@ -125,7 +178,11 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Checks if the end boss is alerted, stops its movement, and plays the alert animation.
+   * Alert state:
+   * - Triggered when `world.endbossAlert` is true.
+   * - Plays end boss sound.
+   * - Freezes movement (speed = 0).
+   * - Plays alert animation.
    */
   endbossIsAlert() {
     if (this.world && this.world.endbossAlert === true) {
@@ -136,17 +193,24 @@ class Endboss extends MovableObject {
   }
 
   /**
-   * Handles the attack state of the end boss. Increases speed and plays the attack animation.
+   * Attack state:
+   * - Stops end boss sound.
+   * - Increases speed to 12.
+   * - Moves left (note: currently `this.moveLeft` is referenced but not invoked).
+   * - Plays attack animation.
    */
   endbossAttack() {
     this.audioManager.stopEndbossSound();
     this.speed = 12;
-    this.moveLeft;
+    this.moveLeft; // <— function is referenced but not executed
     this.playAnimation(this.IMAGES_ATTACK);
   }
 
   /**
-   * Triggered when the end boss dies. Stops movement, plays the death animation, and plays a sound.
+   * Dead state:
+   * - Plays chicken sound.
+   * - Freezes movement (speed = 0).
+   * - Plays death animation.
    */
   endbossDead() {
     this.audioManager.playChickenSound();
