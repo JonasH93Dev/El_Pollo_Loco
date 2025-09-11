@@ -46,18 +46,29 @@ class World {
     }, 120);
   }
 
-  /** Draws world & UI via requestAnimationFrame. */
+  /** Draws world & UI via requestAnimationFrame. Character is drawn last (on top of everything). */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // 1) World behind character (with camera)
+    this.ctx.save();
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
-    this.addToMap(this.character);
     [this.level.clouds, this.level.endboss, this.level.enemies,
      this.level.coins, this.level.bottles, this.throwableObject]
      .forEach(group => this.addObjectsToMap(group));
-    this.ctx.translate(-this.camera_x, 0);
+    this.ctx.restore();
+
+    // 2) UI (status bars) — will be under the character
     [this.statusBar, this.statusBarCoin, this.statusBarBottles, this.statusBarEndboss]
       .forEach(o => this.addToMap(o));
+
+    // 3) Character on top of everything (with camera)
+    this.ctx.save();
+    this.ctx.translate(this.camera_x, 0);
+    this.addToMap(this.character);
+    this.ctx.restore();
+
     requestAnimationFrame(() => this.draw());
   }
 
