@@ -4,7 +4,7 @@ let canvas;
 let world;
 let keyboard = new Keyboard();
 
-// Speicherzustand direkt beim Laden übernehmen
+// Load persisted mute state at startup
 let isMuted = JSON.parse(localStorage.getItem("isMuted") || "false");
 
 let background_sound = new Audio("audio/background_sound.mp3");
@@ -16,13 +16,15 @@ background_sound.volume = 0.01;
 const $ = (id) => document.getElementById(id);
 
 /**
- * Sets display style on an element by id.
+ * Sets the display style on an element by id.
  * @param {string} id - Element id.
  * @param {string} display - CSS display value.
  */
 function setDisplay(id, display) { $(id).style.display = display; }
 
-/** Aktualisiert den Text/Zustand des Mute-Buttons passend zu `isMuted`. */
+/**
+ * Updates the mute button label/state according to `isMuted`.
+ */
 function updateMuteButtonUI() {
   const btn = $("muteBtn");
   if (!btn) return;
@@ -31,21 +33,22 @@ function updateMuteButtonUI() {
 }
 
 /**
- * Sammelt alle bekannten AudioManager des Spiels (robust, defensiv).
- * So werden beim Mute/Unmute wirklich ALLE Sounds synchronisiert.
+ * Collects all known AudioManager instances in the game (robust/defensive).
+ * Ensures EVERY sound is synchronized on mute/unmute.
+ * @returns {Set<any>} Set of unique audio manager instances.
  */
 function getAllAudioManagers() {
   const managers = new Set();
 
   if (!world) return managers;
 
-  // World selbst
+  // World itself
   if (world.audioManager) managers.add(world.audioManager);
 
   // Character
   if (world.character?.audioManager) managers.add(world.character.audioManager);
 
-  // Level-Objekte (Enemies, Endboss, ggf. weitere)
+  // Level objects (enemies, endboss, and others)
   const lvl = world.level;
   if (lvl) {
     const arrays = [
@@ -66,7 +69,7 @@ function getAllAudioManagers() {
     });
   }
 
-  // Eventuelle sonstige Sammlungen in world (throwableObjects etc.)
+  // Any additional collections on world (e.g., throwableObjects)
   const maybeArrays = [
     world.throwableObjects,
     world.projectiles
@@ -83,27 +86,27 @@ function getAllAudioManagers() {
 }
 
 /**
- * Wendet Mute/Unmute auf BG-Audio + alle AudioManager im Spiel an.
- * @param {boolean} muted
+ * Applies mute/unmute to background audio + all AudioManagers in the game.
+ * @param {boolean} muted - Whether audio should be muted.
  */
 function setMuted(muted) {
-  // BG/Win/Lose stummschalten
+  // Mute/unmute background/win/lose tracks
   [background_sound, win_sound, game_over_sound].forEach(s => s.muted = muted);
 
-  // Alle AudioManager synchronisieren
+  // Synchronize all SFX managers
   const fn = muted ? "muteSounds" : "unmuteSounds";
   getAllAudioManagers().forEach(am => am?.[fn]?.());
 }
 
 /**
- * Initializes the game: level, world, mobile controls.
+ * Initializes the game: level, world, and mobile controls.
  */
 function init() {
   startLevel();
   canvas = $("canvas");
   world = new World(canvas, keyboard);
 
-  // Sounds (BG + ALLE SFX) auf gespeicherten Status setzen + Button-UI syncen
+  // Apply persisted state to ALL sounds (BG + SFX) and sync button label
   setMuted(isMuted);
   updateMuteButtonUI();
 
@@ -124,7 +127,7 @@ window.addEventListener("keyup",(e)=>{
 });
 
 /**
- * Wires touch buttons to keyboard flags; blocks context menu.
+ * Wires touch buttons to keyboard flags; blocks the context menu.
  */
 function mobileButtons() {
   [["btnLeft","LEFT"],["btnRight","RIGHT"],["btnJump","SPACE"],["btnThrow","D"]]
@@ -137,7 +140,7 @@ function mobileButtons() {
 }
 
 /**
- * Pauses global sounds and resets playback head.
+ * Pauses global sounds and resets their playback heads.
  */
 function pauseSounds() {
   [background_sound,win_sound,game_over_sound].forEach(s=>{s.pause();s.currentTime=0;});
@@ -147,11 +150,11 @@ function pauseSounds() {
 function startLevel(){ initLevel(); }
 
 /**
- * Starts the game, hides screens, plays background music.
+ * Starts the game, hides screens, and plays background music.
  */
 function startGame() {
   init();
-  background_sound.play(); // spielt gemuted, falls isMuted=true
+  background_sound.play(); // plays muted if isMuted=true
   setDisplay("startScreen","none");
   setDisplay("endScreenWin","none");
   setDisplay("endScreenLose","none");
@@ -180,7 +183,7 @@ function goToMenu() {
 }
 
 /**
- * Shows win screen and plays win sound.
+ * Shows the win screen and plays the win sound.
  */
 function openWinScreen() {
   clearAllIntervals();
@@ -191,7 +194,7 @@ function openWinScreen() {
 }
 
 /**
- * Shows lose screen and plays game-over sound.
+ * Shows the lose screen and plays the game-over sound.
  */
 function openLoseScreen() {
   clearAllIntervals();
@@ -206,7 +209,7 @@ function openLoseScreen() {
 function clearAllIntervals(){ for(let i=1;i<9999;i++) window.clearInterval(i); }
 
 /**
- * Toggles global mute state and updates UI + AudioManagers.
+ * Toggles the global mute state and updates UI + AudioManagers.
  */
 function toggleMute() {
   isMuted = !isMuted;
@@ -235,6 +238,6 @@ window.addEventListener("resize",checkOrientation);
 window.addEventListener("orientationchange",checkOrientation);
 window.addEventListener("load",()=>{
   checkOrientation();
-  // Button-Text beim Seitenstart zum gespeicherten Zustand synchronisieren
+  // Sync button label with the persisted state when the page loads
   updateMuteButtonUI();
 });

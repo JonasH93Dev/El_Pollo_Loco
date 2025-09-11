@@ -1,6 +1,6 @@
 /**
  * Main game world: manages entities, updates, drawing, and interactions.
- * - rAF for drawing; setInterval (~10 FPS) for logic.
+ * - rAF for drawing; setInterval for logic.
  */
 class World {
   /** Current level (default: level1). */ level = level1;
@@ -25,29 +25,28 @@ class World {
     this.run();
   }
 
-  /** Inject world reference into character. */
+  /** Injects world reference into the character. */
   setWorld() { this.character.world = this; }
 
- /** Haupt-Logikloops */
-run() {
-  // Schneller Loop (~50 FPS) → reaktionsschnell
-  setInterval(() => {
-    this.checkThrowObjects();                // Spieler wirft Flasche
-    this.checkCollisionsCoins();             // Münzen einsammeln
-    this.checkCollisionsBottles();           // Flaschen einsammeln
-    this.jumpOnEnemy();                      // Stomp von oben
-    this.checkBottleCollisionWithAllEnemies(); // Flasche trifft Gegner/Boss
-  }, 20);
+  /** Main logic loops. */
+  run() {
+    // Fast loop (~50 FPS) → responsive actions
+    setInterval(() => {
+      this.checkThrowObjects();                  // Player throws bottle
+      this.checkCollisionsCoins();               // Collect coins
+      this.checkCollisionsBottles();             // Collect bottles
+      this.jumpOnEnemy();                        // Stomp from above
+      this.checkBottleCollisionWithAllEnemies(); // Bottle hits enemy/boss
+    }, 20);
 
-  // Langsamer Loop (~8 FPS) → Schaden vom Gegner/Boss
-  setInterval(() => {
-    this.checkCollisions();          // Spieler vs. normale Gegner
-    this.checkCollisionsByEndboss(); // Spieler vs. Endboss
-  }, 120);
-}
+    // Slower loop (~8 FPS) → damage from enemies/boss
+    setInterval(() => {
+      this.checkCollisions();          // Player vs. regular enemies
+      this.checkCollisionsByEndboss(); // Player vs. end boss
+    }, 120);
+  }
 
-
-  /** Draws world & UI via rAF. */
+  /** Draws world & UI via requestAnimationFrame. */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.translate(this.camera_x, 0);
@@ -63,7 +62,7 @@ run() {
   }
 
   /**
-   * Handle throwing bottles (cooldown 800 ms) + update bottle bar.
+   * Handles bottle throwing (cooldown 800 ms) + updates bottle bar.
    */
   checkThrowObjects() {
     const now = Date.now();
@@ -213,7 +212,7 @@ run() {
   }
 
   /**
-   * Delete enemy (uses global level1 per original behavior).
+   * Delete enemy (uses global level1 as in original behavior).
    * @param {number} index
    */
   deleteEnemy(index) { setTimeout(() => { level1.enemies.splice(index, 1); }, 400); }
