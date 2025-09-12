@@ -1,4 +1,3 @@
-// js/game.js
 
 let canvas;
 let world;
@@ -22,6 +21,15 @@ const $ = (id) => document.getElementById(id);
  */
 function setDisplay(id, display) { $(id).style.display = display; }
 
+/** Focus canvas so Space doesn't click buttons after restart. */
+function focusCanvas() {
+  const c = $("canvas");
+  if (!c) return;
+  if (!c.hasAttribute("tabindex")) c.setAttribute("tabindex", "0");
+  if (document.activeElement) document.activeElement.blur();
+  c.focus();
+}
+
 /**
  * Updates the mute button label/state according to `isMuted`.
  */
@@ -30,6 +38,17 @@ function updateMuteButtonUI() {
   if (!btn) return;
   btn.innerText = isMuted ? "UNMUTE - M" : "MUTE - M";
   btn.setAttribute("aria-pressed", String(isMuted));
+}
+
+/**
+ * Detects if the device supports touch input.
+ */
+function hasTouch() {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
 }
 
 /**
@@ -117,6 +136,7 @@ function init() {
 const keyMap = {37:"LEFT",38:"UP",39:"RIGHT",40:"DOWN",32:"SPACE",68:"D",77:"M"};
 
 window.addEventListener("keydown",(e)=>{
+  if (e.code === "Space") e.preventDefault();      // prevent button click via Space
   const k = keyMap[e.keyCode]; if(!k) return;
   if(k==="M") toggleMute(); else keyboard[k]=true;
 });
@@ -133,6 +153,7 @@ function mobileButtons() {
   [["btnLeft","LEFT"],["btnRight","RIGHT"],["btnJump","SPACE"],["btnThrow","D"]]
   .forEach(([id,flag])=>{
     const el=$(id);
+    if (!el) return;
     el.addEventListener("touchstart",(e)=>{e.preventDefault();keyboard[flag]=true;});
     el.addEventListener("touchend",(e)=>{e.preventDefault();keyboard[flag]=false;});
     el.addEventListener("contextmenu",(e)=>e.preventDefault());
@@ -158,6 +179,7 @@ function startGame() {
   setDisplay("startScreen","none");
   setDisplay("endScreenWin","none");
   setDisplay("endScreenLose","none");
+  focusCanvas(); // ensure Space won't click buttons
 }
 
 /**
@@ -169,6 +191,7 @@ function restartGame() {
   ["endScreenWin","endScreenLose","startScreen"].forEach(id=>setDisplay(id,"none"));
   init();
   background_sound.play();
+  focusCanvas(); // ensure Space won't click RESTART again
 }
 
 /**
@@ -219,19 +242,32 @@ function toggleMute() {
 }
 
 /**
- * Adjusts UI for narrow landscape/portrait screens; keeps overlay visible.
+ * Adjusts UI for narrow landscape/portrait screens; considers touch devices.
+ * - Shows rotation screen on narrow portrait.
+ * - Shows mobile controls if the device supports touch (regardless of resolution).
  */
 function checkOrientation() {
   const narrow = window.innerWidth < 1200;
   const portrait = window.innerHeight > window.innerWidth;
-  if(narrow && portrait){
+  const touch = hasTouch();
+
+  // rotation screen for narrow portrait
+  if (narrow && portrait) {
     setDisplay("landscapeScreen","flex");
-    document.querySelector(".game-container").style.display="none";
+    const game = document.querySelector(".game-container");
+    if (game) game.style.display = "none";
   } else {
     setDisplay("landscapeScreen","none");
-    document.querySelector(".game-container").style.display="block";
+    const game = document.querySelector(".game-container");
+    if (game) game.style.display = "block";
   }
-  document.querySelector(".overlay").style.display="flex";
+
+  // show/hide mobile controls based on touch support
+  const panel = document.querySelector(".panel-moving");
+  if (panel) panel.style.display = touch ? "flex" : "none";
+
+  const overlay = document.querySelector(".overlay");
+  if (overlay) overlay.style.display = "flex";
 }
 
 window.addEventListener("resize",checkOrientation);

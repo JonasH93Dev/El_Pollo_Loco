@@ -88,59 +88,83 @@ class World {
 
   /** Checks bottle collisions with enemies and end boss. */
   checkBottleCollisionWithAllEnemies() {
-    this.throwableObject.forEach((bottle, i) => {
-      this.checkBottleCollisionWithEnemies(bottle, i);
-      this.checkBottleCollisionWithEndBoss(bottle, i);
+    // iterate over a shallow copy to avoid index drift while deleting
+    const bottlesSnapshot = this.throwableObject.slice();
+    bottlesSnapshot.forEach((bottle) => {
+      if (this.setHitBottles.has(bottle)) return; // already used this tick
+      this.checkBottleCollisionWithEnemies(bottle);
+      this.checkBottleCollisionWithEndBoss(bottle);
     });
+    this.setHitBottles.clear();
   }
 
   /**
-   * Bottle vs. normal enemies.
+   * Bottle vs. normal enemies — delayed removal by reference to allow death animation.
    * @param {ThrowableObject} bottle
-   * @param {number} bottleIndex
    */
-  checkBottleCollisionWithEnemies(bottle, bottleIndex) {
-    this.level.enemies.forEach((enemy, enemyIndex) => {
+  checkBottleCollisionWithEnemies(bottle) {
+    for (let i = this.level.enemies.length - 1; i >= 0; i--) {
+      const enemy = this.level.enemies[i];
+      if (enemy?._dying) continue; // ignore enemies already dying
+
       if (bottle.isColliding(enemy)) {
-        enemy.hitEnemy();
-        this.deleteEnemy(enemyIndex);
-        this.deleteBottle(bottleIndex);
+        enemy.hitEnemy();           // triggers enemy's own death state/animation
+        enemy._dying = true;        // mark so it won't collide again
+
+        // remove enemy after animation delay (by reference)
+        this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
+
+        // remove the bottle by reference immediately (so it can't hit others)
+        this.deleteBottleByRef(bottle);
+
+        this.setHitBottles.add(bottle);
+        break; // one bottle → one enemy
       }
-    });
+    }
   }
 
   /**
-   * Bottle vs. end boss (no double count via set).
+   * Bottle vs. end boss — prevents double counting with setHitBottles.
    * @param {ThrowableObject} bottle
-   * @param {number} bottleIndex
    */
-  checkBottleCollisionWithEndBoss(bottle, bottleIndex) {
-    this.level.endboss.forEach((endboss) => {
-      if (bottle.isColliding(endboss) && !this.setHitBottles.has(bottle)) {
+  checkBottleCollisionWithEndBoss(bottle) {
+    if (this.setHitBottles.has(bottle)) return;
+
+    for (let i = 0; i < this.level.endboss.length; i++) {
+      const endboss = this.level.endboss[i];
+      if (bottle.isColliding(endboss)) {
         endboss.hitEndboss();
         this.statusBarEndboss.setPercentage(endboss.energy);
+        this.deleteBottleByRef(bottle);
         this.setHitBottles.add(bottle);
-        this.deleteBottle(bottleIndex);
+        break;
       }
-    });
+    }
   }
 
-  /** Stomp-kill enemies when falling onto them. */
+  /** Stomp-kill enemies when falling onto them — delayed removal for stomp death animation. */
   jumpOnEnemy() {
-    this.level.enemies.forEach((enemy, index) => {
+    for (let i = this.level.enemies.length - 1; i >= 0; i--) {
+      const enemy = this.level.enemies[i];
+      if (enemy?._dying) continue;
+
       if (this.character.isColliding(enemy) &&
           this.character.isAboveGround() &&
           this.character.speedY < 0) {
         this.character.jumpOfEnemy();
         enemy.hitEnemy();
-        this.deleteEnemy(index);
+        enemy._dying = true;
+
+        // allow stomp death animation, then remove by reference
+        this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
       }
-    });
+    }
   }
 
   /** Character vs. enemies (ground collision → damage). */
   checkCollisions() {
     this.level.enemies.forEach((enemy) => {
+      if (enemy?._dying) return; // ignore dying enemies
       if (this.character.isColliding(enemy) && !this.character.isAboveGround()) {
         this.character.hit();
         this.statusBar.setPercentage(this.character.energy);
@@ -223,14 +247,37 @@ class World {
   }
 
   /**
-   * Delete enemy (uses global level1 as in original behavior).
+   * Delete enemy (legacy signature kept; prefer scheduleRemovalFromArray with delay).
    * @param {number} index
    */
-  deleteEnemy(index) { setTimeout(() => { level1.enemies.splice(index, 1); }, 400); }
+  deleteEnemy(index) {
+    if (index >= 0 && index < this.level.enemies.length) {
+      this.level.enemies.splice(index, 1);
+    }
+  }
 
   /**
-   * Delete thrown bottle from active list.
+   * Delete thrown bottle from active list by index (legacy).
    * @param {number} index
    */
   deleteBottle(index) { setTimeout(() => { this.throwableObject.splice(index, 1); }, 100); }
+
+  /** Delete thrown bottle by reference (index-safe). */
+  deleteBottleByRef(bottle) {
+    const idx = this.throwableObject.indexOf(bottle);
+    if (idx >= 0) this.throwableObject.splice(idx, 1);
+  }
+
+  /**
+   * Schedules removal of `item` from `arr` after `delay` ms (by reference, index-safe).
+   * @param {any[]} arr
+   * @param {any} item
+   * @param {number} delay
+   */
+  scheduleRemovalFromArray(arr, item, delay = 400) {
+    setTimeout(() => {
+      const i = arr.indexOf(item);
+      if (i >= 0) arr.splice(i, 1);
+    }, delay);
+  }
 }

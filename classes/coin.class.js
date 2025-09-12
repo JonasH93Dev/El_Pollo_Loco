@@ -13,7 +13,7 @@ class Coin extends MovableObject {
   offset = { top: 50, bottom: 50, left: 50, right: 50 };
 
   /** Frames for blinking animation. */
-  IMAGES = ["img/8_coin/coin_1.png", "img/8_coin/coin_2.png"];
+  IMAGES = ["img/8_coin/coin_1.png", "img/8_coin/coin_2.png"];a
 
   /** Sets up sprite, preloads frames, randomizes spawn, and starts blinking. */
   constructor() {
@@ -21,7 +21,7 @@ class Coin extends MovableObject {
     this.loadImages(this.IMAGES);
     this.audioManager = new AudioManager();
     this.x = 250 + Math.random() * 1800;
-    this.y = 50 + Math.random() * 300;
+    this.y = 50 + Math.random() * 300 + 15;
     this.animate();
   }
 

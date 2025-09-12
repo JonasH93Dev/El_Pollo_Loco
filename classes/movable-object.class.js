@@ -11,9 +11,18 @@ class MovableObject extends DrawableObject {
   /** Applies gravity at 25 FPS; updates y and vertical speed. */
   applyGravity() {
     setInterval(() => {
-      if (this.isAboveGround() || this.speedY > 0) {
+      const wasAirborne = (this.isAboveGround() || this.speedY > 0);
+
+      if (wasAirborne) {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
+      }
+
+      const nowAirborne = (this.isAboveGround() || this.speedY > 0);
+
+      // fire landing hook once when touching ground after being airborne
+      if (wasAirborne && !nowAirborne && typeof this.onLand === 'function') {
+        this.onLand();
       }
     }, 1000 / 25);
   }

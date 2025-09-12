@@ -78,6 +78,11 @@ class Character extends MovableObject {
   /** Duplicate kept intentionally to preserve original shape. */
   world;
 
+  // --- Added state for robust jump/animation handling ---
+  isJumping = false;
+  canJump = true;
+  _animKey = null;
+
   /**
    * Sets initial sprite, audio, images; enables gravity & loops.
    */
@@ -109,12 +114,13 @@ class Character extends MovableObject {
 
   /**
    * Selects animation by priority: dead → hurt → jump → walk → idle.
+   * Uses guarded state switch to avoid restarting sequences mid-air.
    */
   characterHurtDeadJumpAnimation() {
-    if (this.isDead()) { this.playAnimation(this.IMAGES_DEAD); openLoseScreen(); return; }
-    if (this.isHurt()) { this.playAnimation(this.IMAGES_HURT); this.audioManager.playHurtSound(); return; }
-    if (this.isAboveGround()) { this.playAnimation(this.IMAGES_JUMPING); return; }
-    if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) { this.playAnimation(this.IMAGES_WALKING); return; }
+    if (this.isDead()) { this.setAnimation('dead', this.IMAGES_DEAD); openLoseScreen(); return; }
+    if (this.isHurt()) { this.setAnimation('hurt', this.IMAGES_HURT); this.audioManager.playHurtSound(); return; }
+    if (this.isAboveGround() || this.isJumping || this.speedY > 0) { this.setAnimation('jump', this.IMAGES_JUMPING); return; }
+    if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) { this.setAnimation('walk', this.IMAGES_WALKING); return; }
     this.characterIdle();
   }
 
@@ -142,9 +148,9 @@ class Character extends MovableObject {
     }
   }
 
-  /** Jump when grounded; play sound; update timestamp. */
+  /** Jump when grounded (edge-triggered); play sound; update timestamp. */
   tryJump() {
-    if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+    if (this.world.keyboard.SPACE && this.canJump && !this.isAboveGround()) {
       this.jump(); this.audioManager.playJumpSound(); this.lastMove = Date.now();
     }
   }
@@ -156,10 +162,35 @@ class Character extends MovableObject {
    * Plays idle vs. long-idle (threshold: 10s inactivity).
    */
   characterIdle() {
-    if (Date.now() - this.lastMove >= 10000) this.playAnimation(this.IMAGES_LONG_IDLE);
-    else this.playAnimation(this.IMAGES_IDLE);
+    if (Date.now() - this.lastMove >= 10000) this.setAnimation('long_idle', this.IMAGES_LONG_IDLE);
+    else this.setAnimation('idle', this.IMAGES_IDLE);
   }
 
   /** Assigns upward vertical speed and refreshes lastMove. */
-  jump() { this.speedY = 20; this.lastMove = Date.now(); }
+  jump() { 
+    this.speedY = 20; 
+    this.lastMove = Date.now(); 
+    this.isJumping = true; 
+    this.canJump = false; 
+  }
+
+  // --- Animation switch guard: reset frame index ONLY when sequence changes ---
+  setAnimation(key, images) {
+    if (this._animKey !== key) {
+      this._animKey = key;
+      this.currentImage = 0;
+    }
+    this.playAnimation(images);
+  }
+
+  // --- Called by MovableObject when landing is detected ---
+  onLand() {
+    this.isJumping = false;
+    this.canJump = true;
+    // prepare for ground states (idle/walk) without jump sequence restarting mid-air
+    if (this._animKey === 'jump') {
+      this._animKey = null;   // force next ground state to reset cleanly
+      this.currentImage = 0;
+    }
+  }
 }
