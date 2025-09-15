@@ -87,10 +87,7 @@ class World {
       const enemy = this.level.enemies[i];
       if (enemy?._dying) continue;
       if (bottle.isColliding(enemy)) {
-        // play splash sound immediately on hit
-        if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
-          this.audioManager.playSplashSound();
-        }
+       
         enemy.hitEnemy(); enemy._dying = true;
         this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
         if (typeof bottle.breakNow === 'function') {
@@ -115,10 +112,8 @@ class World {
     for (let i = 0; i < this.level.endboss.length; i++) {
       const endboss = this.level.endboss[i];
       if (bottle.isColliding(endboss)) {
-        // play splash sound immediately on hit
-        if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
-          this.audioManager.playSplashSound();
-        }
+  
+      
         if (typeof endboss.hitEndboss === 'function') {
           endboss.hitEndboss(); // -20 energy, set lastHit
         } else {
