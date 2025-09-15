@@ -67,7 +67,7 @@ class Chicken extends MovableObject {
     let intervalDeadMove = setInterval(() => {
       if (this.isDead()) {
         this.audioManager.playChickenSound();
-        clearInterval(this.intervalMove); // not actually set (documented)
+        clearInterval(this.intervalMove);
         this.playAnimation(this.IMAGES_DEAD);
         clearInterval(intervalDeadMove);
       } else {

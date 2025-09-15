@@ -10,10 +10,10 @@
  * - Keys: arrows (← → ↑ ↓), Space (jump), D (throw).
  */
 class Keyboard {
-  LEFT = false;   // ←
-  RIGHT = false;  // →
-  UP = false;     // ↑
-  DOWN = false;   // ↓
-  SPACE = false;  // Jump
-  D = false;      // Throw
+  LEFT = false;  
+  RIGHT = false;  
+  UP = false;     
+  DOWN = false;   
+  SPACE = false;  
+  D = false;     
 }

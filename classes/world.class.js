@@ -30,45 +30,23 @@ class World {
 
   /** Main logic loops. */
   run() {
-    // Fast loop (~50 FPS) → responsive actions
     setInterval(() => {
-      this.checkThrowObjects();                  // Player throws bottle
-      this.checkCollisionsCoins();               // Collect coins
-      this.checkCollisionsBottles();             // Collect bottles
-      this.jumpOnEnemy();                        // Stomp from above
-      this.checkBottleCollisionWithAllEnemies(); // Bottle hits enemy/boss
+      this.checkThrowObjects(); this.checkCollisionsCoins();
+      this.checkCollisionsBottles(); this.jumpOnEnemy();
+      this.checkBottleCollisionWithAllEnemies();
     }, 20);
-
-    // Slower loop (~8 FPS) → damage from enemies/boss
-    setInterval(() => {
-      this.checkCollisions();          // Player vs. regular enemies
-      this.checkCollisionsByEndboss(); // Player vs. end boss
-    }, 120);
+    setInterval(() => { this.checkCollisions(); this.checkCollisionsByEndboss(); }, 120);
   }
 
-  /** Draws world & UI via requestAnimationFrame. Character is drawn last (on top of everything). */
+  /** Draws world & UI via requestAnimationFrame. Character is drawn last (on top). */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // 1) World behind character (with camera)
-    this.ctx.save();
-    this.ctx.translate(this.camera_x, 0);
+    this.ctx.save(); this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
-    [this.level.clouds, this.level.endboss, this.level.enemies,
-     this.level.coins, this.level.bottles, this.throwableObject]
-     .forEach(group => this.addObjectsToMap(group));
+    [this.level.clouds, this.level.endboss, this.level.enemies, this.level.coins, this.level.bottles, this.throwableObject].forEach(g => this.addObjectsToMap(g));
     this.ctx.restore();
-
-    // 2) UI (status bars) — will be under the character
-    [this.statusBar, this.statusBarCoin, this.statusBarBottles, this.statusBarEndboss]
-      .forEach(o => this.addToMap(o));
-
-    // 3) Character on top of everything (with camera)
-    this.ctx.save();
-    this.ctx.translate(this.camera_x, 0);
-    this.addToMap(this.character);
-    this.ctx.restore();
-
+    [this.statusBar, this.statusBarCoin, this.statusBarBottles, this.statusBarEndboss].forEach(o => this.addToMap(o));
+    this.ctx.save(); this.ctx.translate(this.camera_x, 0); this.addToMap(this.character); this.ctx.restore();
     requestAnimationFrame(() => this.draw());
   }
 
@@ -79,8 +57,7 @@ class World {
     const now = Date.now();
     if (this.keyboard.D && this.bottles.length > 0 && now - this.lastThrowTime >= 800) {
       const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
-      this.throwableObject.push(bottle);
-      this.bottles.pop();
+      this.throwableObject.push(bottle); this.bottles.pop();
       this.statusBarBottles.setPercentage(this.statusBarBottles.percentage - 12.5);
       this.lastThrowTime = now;
     }
@@ -88,10 +65,9 @@ class World {
 
   /** Checks bottle collisions with enemies and end boss. */
   checkBottleCollisionWithAllEnemies() {
-    // iterate over a shallow copy to avoid index drift while deleting
     const bottlesSnapshot = this.throwableObject.slice();
-    bottlesSnapshot.forEach((bottle) => {
-      if (this.setHitBottles.has(bottle)) return; // already used this tick
+    bottlesSnapshot.forEach(bottle => {
+      if (this.setHitBottles.has(bottle)) return;
       this.checkBottleCollisionWithEnemies(bottle);
       this.checkBottleCollisionWithEndBoss(bottle);
     });
@@ -105,20 +81,11 @@ class World {
   checkBottleCollisionWithEnemies(bottle) {
     for (let i = this.level.enemies.length - 1; i >= 0; i--) {
       const enemy = this.level.enemies[i];
-      if (enemy?._dying) continue; // ignore enemies already dying
-
+      if (enemy?._dying) continue;
       if (bottle.isColliding(enemy)) {
-        enemy.hitEnemy();           // triggers enemy's own death state/animation
-        enemy._dying = true;        // mark so it won't collide again
-
-        // remove enemy after animation delay (by reference)
+        enemy.hitEnemy(); enemy._dying = true;
         this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
-
-        // remove the bottle by reference immediately (so it can't hit others)
-        this.deleteBottleByRef(bottle);
-
-        this.setHitBottles.add(bottle);
-        break; // one bottle → one enemy
+        this.deleteBottleByRef(bottle); this.setHitBottles.add(bottle); break;
       }
     }
   }
@@ -129,33 +96,21 @@ class World {
    */
   checkBottleCollisionWithEndBoss(bottle) {
     if (this.setHitBottles.has(bottle)) return;
-
     for (let i = 0; i < this.level.endboss.length; i++) {
       const endboss = this.level.endboss[i];
       if (bottle.isColliding(endboss)) {
-        endboss.hitEndboss();
-        this.statusBarEndboss.setPercentage(endboss.energy);
-        this.deleteBottleByRef(bottle);
-        this.setHitBottles.add(bottle);
-        break;
+        endboss.hitEndboss(); this.statusBarEndboss.setPercentage(endboss.energy);
+        this.deleteBottleByRef(bottle); this.setHitBottles.add(bottle); break;
       }
     }
   }
 
-  /** Stomp-kill enemies when falling onto them — delayed removal for stomp death animation. */
+  /** Stomp-kill enemies when falling onto them — delayed removal for animation. */
   jumpOnEnemy() {
     for (let i = this.level.enemies.length - 1; i >= 0; i--) {
-      const enemy = this.level.enemies[i];
-      if (enemy?._dying) continue;
-
-      if (this.character.isColliding(enemy) &&
-          this.character.isAboveGround() &&
-          this.character.speedY < 0) {
-        this.character.jumpOfEnemy();
-        enemy.hitEnemy();
-        enemy._dying = true;
-
-        // allow stomp death animation, then remove by reference
+      const enemy = this.level.enemies[i]; if (enemy?._dying) continue;
+      if (this.character.isColliding(enemy) && this.character.isAboveGround() && this.character.speedY < 0) {
+        this.character.jumpOfEnemy(); enemy.hitEnemy(); enemy._dying = true;
         this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
       }
     }
@@ -163,11 +118,10 @@ class World {
 
   /** Character vs. enemies (ground collision → damage). */
   checkCollisions() {
-    this.level.enemies.forEach((enemy) => {
-      if (enemy?._dying) return; // ignore dying enemies
+    this.level.enemies.forEach(enemy => {
+      if (enemy?._dying) return;
       if (this.character.isColliding(enemy) && !this.character.isAboveGround()) {
-        this.character.hit();
-        this.statusBar.setPercentage(this.character.energy);
+        this.character.hit(); this.statusBar.setPercentage(this.character.energy);
       }
     });
   }
@@ -176,8 +130,7 @@ class World {
   checkCollisionsBottles() {
     this.level.bottles.forEach((bottle, index) => {
       if (this.character.isColliding(bottle)) {
-        this.audioManager.playPopSound();
-        this.collectBottles(bottle, index);
+        this.audioManager.playPopSound(); this.collectBottles(bottle, index);
         this.statusBarBottles.setPercentage(this.statusBarBottles.percentage + 12.5);
       }
     });
@@ -187,8 +140,7 @@ class World {
   checkCollisionsCoins() {
     this.level.coins.forEach((coin, index) => {
       if (this.character.isColliding(coin)) {
-        this.audioManager.playCoinSound();
-        this.collectCoins(coin, index);
+        this.audioManager.playCoinSound(); this.collectCoins(coin, index);
         this.statusBarCoin.setPercentage(this.statusBarCoin.percentage + 12.5);
       }
     });
@@ -196,10 +148,9 @@ class World {
 
   /** Character vs. end boss (direct hit → heavy damage). */
   checkCollisionsByEndboss() {
-    this.level.endboss.forEach((endboss) => {
+    this.level.endboss.forEach(endboss => {
       if (this.character.isColliding(endboss)) {
-        this.character.hitByEndboss();
-        this.statusBar.setPercentage(this.character.energy);
+        this.character.hitByEndboss(); this.statusBar.setPercentage(this.character.energy);
       }
     });
   }
@@ -214,47 +165,25 @@ class World {
    * Draw one object and flip if needed.
    * @param {DrawableObject} mo
    */
-  addToMap(mo) {
-    if (mo.otherDirection) this.flipImage(mo);
-    mo.draw(this.ctx);
-    if (mo.otherDirection) this.flipImageBack(mo);
-  }
+  addToMap(mo) { if (mo.otherDirection) this.flipImage(mo); mo.draw(this.ctx); if (mo.otherDirection) this.flipImageBack(mo); }
 
   /** Flip horizontally (for left-facing). */
-  flipImage(mo) {
-    this.ctx.save();
-    this.ctx.translate(mo.width, 0);
-    this.ctx.scale(-1, 1);
-    mo.x = mo.x * -1;
-  }
+  flipImage(mo) { this.ctx.save(); this.ctx.translate(mo.width, 0); this.ctx.scale(-1, 1); mo.x = mo.x * -1; }
 
   /** Restore orientation after flip. */
-  flipImageBack(mo) {
-    mo.x = mo.x * -1;
-    this.ctx.restore();
-  }
+  flipImageBack(mo) { mo.x = mo.x * -1; this.ctx.restore(); }
 
   /** Collect bottle from level. */
-  collectBottles(bottle, index) {
-    this.bottles.push(bottle);
-    this.level.bottles.splice(index, 1);
-  }
+  collectBottles(bottle, index) { this.bottles.push(bottle); this.level.bottles.splice(index, 1); }
 
   /** Collect coin from level. */
-  collectCoins(coin, index) {
-    this.coins.push(coin);
-    this.level.coins.splice(index, 1);
-  }
+  collectCoins(coin, index) { this.coins.push(coin); this.level.coins.splice(index, 1); }
 
   /**
    * Delete enemy (legacy signature kept; prefer scheduleRemovalFromArray with delay).
    * @param {number} index
    */
-  deleteEnemy(index) {
-    if (index >= 0 && index < this.level.enemies.length) {
-      this.level.enemies.splice(index, 1);
-    }
-  }
+  deleteEnemy(index) { if (index >= 0 && index < this.level.enemies.length) this.level.enemies.splice(index, 1); }
 
   /**
    * Delete thrown bottle from active list by index (legacy).
@@ -263,10 +192,7 @@ class World {
   deleteBottle(index) { setTimeout(() => { this.throwableObject.splice(index, 1); }, 100); }
 
   /** Delete thrown bottle by reference (index-safe). */
-  deleteBottleByRef(bottle) {
-    const idx = this.throwableObject.indexOf(bottle);
-    if (idx >= 0) this.throwableObject.splice(idx, 1);
-  }
+  deleteBottleByRef(bottle) { const idx = this.throwableObject.indexOf(bottle); if (idx >= 0) this.throwableObject.splice(idx, 1); }
 
   /**
    * Schedules removal of `item` from `arr` after `delay` ms (by reference, index-safe).
@@ -274,10 +200,5 @@ class World {
    * @param {any} item
    * @param {number} delay
    */
-  scheduleRemovalFromArray(arr, item, delay = 400) {
-    setTimeout(() => {
-      const i = arr.indexOf(item);
-      if (i >= 0) arr.splice(i, 1);
-    }, delay);
-  }
+  scheduleRemovalFromArray(arr, item, delay = 400) { setTimeout(() => { const i = arr.indexOf(item); if (i >= 0) arr.splice(i, 1); }, delay); }
 }

@@ -19,8 +19,6 @@ class MovableObject extends DrawableObject {
       }
 
       const nowAirborne = (this.isAboveGround() || this.speedY > 0);
-
-      // fire landing hook once when touching ground after being airborne
       if (wasAirborne && !nowAirborne && typeof this.onLand === 'function') {
         this.onLand();
       }
@@ -90,7 +88,7 @@ class MovableObject extends DrawableObject {
   }
 
   /** Move right by speed. */  moveRight() { this.x += this.speed; }
-  /** Move left by speed. */   moveLeft()  { this.x -= this.speed; }
-  /** Jump upward. */          jump()      { this.speedY = 13; }
-  /** Bounce off enemy. */     jumpOfEnemy(){ this.speedY = 10; }
+  /** Move left by speed. */   moveLeft() { this.x -= this.speed; }
+  /** Jump upward. */          jump() { this.speedY = 13; }
+  /** Bounce off enemy. */     jumpOfEnemy() { this.speedY = 10; }
 }

@@ -187,9 +187,9 @@ class Character extends MovableObject {
   onLand() {
     this.isJumping = false;
     this.canJump = true;
-    // prepare for ground states (idle/walk) without jump sequence restarting mid-air
+   
     if (this._animKey === 'jump') {
-      this._animKey = null;   // force next ground state to reset cleanly
+      this._animKey = null;  
       this.currentImage = 0;
     }
   }
