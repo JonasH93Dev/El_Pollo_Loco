@@ -2,17 +2,13 @@
  * End boss enemy extending {@link MovableObject}.
  * - Cycles animations: walking, alert, attack, hurt, dead.
  * - State order: alert → dead → hurt → attack.
- * - Triggers SFX via {@link AudioManager}; win screen on death.
+ * - Triggers SFX via {@link AudioManager}.
  * - Spawns at X=2500, speed adjusted per state.
  */
 class Endboss extends MovableObject {
-  /** Dimensions/position (px). */ 
   height = 400; width = 300; y = 50;
-
-  /** Hitbox offsets (px). */
   offset = { top: 80, bottom: 80, left: 60, right: 10 };
 
-  /** Animation frames. */
   IMAGES_WALKING = [
     "img/4_enemie_boss_chicken/2_alert/G5.png",
     "img/4_enemie_boss_chicken/2_alert/G6.png",
@@ -54,17 +50,16 @@ class Endboss extends MovableObject {
     "img/4_enemie_boss_chicken/5_dead/G26.png",
   ];
 
-  /** Loads first sprite, audio, frames; sets spawn & base speed; starts loop. */
   constructor() {
     super().loadImage(this.IMAGES_WALKING[0]);
     this.audioManager = new AudioManager();
     this.loadAllImages();
     this.x = 2500;
     this.speed = 0.5;
+    this.energy = 100;
     this.animate();
   }
 
-  /** Preload all animation frame sets. */
   loadAllImages() {
     this.loadImages(this.IMAGES_WALKING);
     this.loadImages(this.IMAGES_DEAD);
@@ -73,7 +68,6 @@ class Endboss extends MovableObject {
     this.loadImages(this.IMAGES_ALERT);
   }
 
-  /** 10 FPS loop: movement + state animation. */
   animate() {
     let intervalEndboss = setInterval(() => {
       this.endbossMove();
@@ -81,27 +75,27 @@ class Endboss extends MovableObject {
     }, 100);
   }
 
-  /** State evaluation: alert → dead (win) → hurt → attack. */
   endbossAnimationDeadWalkHurtAttack() {
     this.endbossIsAlert();
-    if (this.isDead()) {
+
+    if (this.energy <= 0) {
       this.endbossDead();
-      openWinScreen();
-    } else if (this.isHurt() && this.energy <= 80) {
+      return;
+    }
+
+    if (this.isHurt() && this.energy <= 80) {
       this.endbossIsHurt();
-    } else if (this.energy <= 80 && !this.isDead()) {
+    } else if (this.energy <= 80) {
       this.endbossAttack();
     }
   }
 
-  /** Default: stop SFX, move left, play walking. */
   endbossMove() {
     this.audioManager.stopEndbossSound();
     this.moveLeft();
     this.playAnimation(this.IMAGES_WALKING);
   }
 
-  /** Hurt: play SFX, speed=8, move left, play hurt. */
   endbossIsHurt() {
     this.audioManager.playEndbossSound();
     this.speed = 8;
@@ -109,7 +103,6 @@ class Endboss extends MovableObject {
     this.playAnimation(this.IMAGES_HURT);
   }
 
-  /** Alert: if flagged, play SFX, freeze (speed=0), play alert. */
   endbossIsAlert() {
     if (this.world && this.world.endbossAlert === true) {
       this.audioManager.playEndbossSound();
@@ -118,21 +111,24 @@ class Endboss extends MovableObject {
     }
   }
 
-  /**
-   * Attack: stop SFX, speed=12, (BUG preserved) references moveLeft without calling, play attack.
-   * Note: `this.moveLeft;` is intentionally not invoked to keep original behavior.
-   */
   endbossAttack() {
     this.audioManager.stopEndbossSound();
     this.speed = 12;
-    this.moveLeft; // preserve original (not executed)
+    this.moveLeft;
     this.playAnimation(this.IMAGES_ATTACK);
   }
 
-  /** Dead: play chicken SFX, freeze, play dead. */
   endbossDead() {
     this.audioManager.playChickenSound();
     this.speed = 0;
     this.playAnimation(this.IMAGES_DEAD);
+  }
+
+  /**
+   * Apply a hit from a thrown bottle: minus 20 energy and mark time for "hurt" state.
+   */
+  hitEndboss() {
+    this.energy = Math.max(0, (this.energy ?? 100) - 20);
+    this.lastHit = new Date().getTime();
   }
 }

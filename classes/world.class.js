@@ -10,6 +10,7 @@ class World {
   statusBarBottles = new StatusBarBottles(); statusBarEndboss = new StatusBarEndboss();
   setHitBottles = new Set(); throwableObject = []; coins = []; bottles = [];
   endbossAlert = false;
+  _winTriggered = false;
 
   /**
    * @param {HTMLCanvasElement} canvas - Canvas to draw on.
@@ -34,6 +35,7 @@ class World {
       this.checkThrowObjects(); this.checkCollisionsCoins();
       this.checkCollisionsBottles(); this.jumpOnEnemy();
       this.checkBottleCollisionWithAllEnemies();
+      this.checkWinCondition();
     }, 20);
     setInterval(() => { this.checkCollisions(); this.checkCollisionsByEndboss(); }, 120);
   }
@@ -65,7 +67,7 @@ class World {
 
   /** Checks bottle collisions with enemies and end boss. */
   checkBottleCollisionWithAllEnemies() {
-    const bottlesSnapshot = this.throwableObject.slice();
+    const bottlesSnapshot = this.throwableObject.filter(b => !b.isBroken);
     bottlesSnapshot.forEach(bottle => {
       if (this.setHitBottles.has(bottle)) return;
       this.checkBottleCollisionWithEnemies(bottle);
@@ -76,31 +78,62 @@ class World {
 
   /**
    * Bottle vs. normal enemies — delayed removal by reference to allow death animation.
+   * Triggers immediate splash sound and animation on hit.
    * @param {ThrowableObject} bottle
    */
   checkBottleCollisionWithEnemies(bottle) {
+    if (bottle.isBroken) return;
     for (let i = this.level.enemies.length - 1; i >= 0; i--) {
       const enemy = this.level.enemies[i];
       if (enemy?._dying) continue;
       if (bottle.isColliding(enemy)) {
+        // play splash sound immediately on hit
+        if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
+          this.audioManager.playSplashSound();
+        }
         enemy.hitEnemy(); enemy._dying = true;
         this.scheduleRemovalFromArray(this.level.enemies, enemy, 400);
-        this.deleteBottleByRef(bottle); this.setHitBottles.add(bottle); break;
+        if (typeof bottle.breakNow === 'function') {
+          bottle.breakNow();
+        } else {
+          bottle.isBroken = true;
+        }
+        setTimeout(() => this.deleteBottleByRef(bottle), 400);
+        this.setHitBottles.add(bottle);
+        break;
       }
     }
   }
 
   /**
    * Bottle vs. end boss — prevents double counting with setHitBottles.
+   * Triggers immediate splash sound and animation on hit.
    * @param {ThrowableObject} bottle
    */
   checkBottleCollisionWithEndBoss(bottle) {
-    if (this.setHitBottles.has(bottle)) return;
+    if (bottle.isBroken || this.setHitBottles.has(bottle)) return;
     for (let i = 0; i < this.level.endboss.length; i++) {
       const endboss = this.level.endboss[i];
       if (bottle.isColliding(endboss)) {
-        endboss.hitEndboss(); this.statusBarEndboss.setPercentage(endboss.energy);
-        this.deleteBottleByRef(bottle); this.setHitBottles.add(bottle); break;
+        // play splash sound immediately on hit
+        if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
+          this.audioManager.playSplashSound();
+        }
+        if (typeof endboss.hitEndboss === 'function') {
+          endboss.hitEndboss(); // -20 energy, set lastHit
+        } else {
+          endboss.energy = Math.max(0, (endboss.energy ?? 100) - 20);
+          endboss.lastHit = Date.now();
+        }
+        this.statusBarEndboss.setPercentage(endboss.energy);
+        if (typeof bottle.breakNow === 'function') {
+          bottle.breakNow();
+        } else {
+          bottle.isBroken = true;
+        }
+        setTimeout(() => this.deleteBottleByRef(bottle), 400);
+        this.setHitBottles.add(bottle);
+        break;
       }
     }
   }
@@ -153,6 +186,18 @@ class World {
         this.character.hitByEndboss(); this.statusBar.setPercentage(this.character.energy);
       }
     });
+  }
+
+  /**
+   * Win condition: once all end bosses have energy <= 0, trigger win once after a short delay.
+   */
+  checkWinCondition() {
+    if (this._winTriggered) return;
+    const bosses = this.level.endboss || [];
+    if (bosses.length > 0 && bosses.every(b => (b.energy ?? 100) <= 0)) {
+      this._winTriggered = true;
+      setTimeout(() => { openWinScreen(); }, 600);
+    }
   }
 
   /**

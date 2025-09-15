@@ -62,7 +62,6 @@ class ThrowableObject extends MovableObject {
 
   /**
    * Stops throw & (tries to) stop gravity; clears throw interval.
-   * Note: `clearInterval(this.applyGravity)` is ineffective (no stored ID).
    */
   stopBottleAnimate() {
     clearInterval(this.applyGravity);
@@ -82,14 +81,36 @@ class ThrowableObject extends MovableObject {
   }
 
   /**
-   * Ground check: if y ≥ 360 → break, play splash, hide after 100 ms.
+   * Ground check: if y ≥ 360 → start splash SFX and animation at the same time,
+   * stop movement, and hide after 350 ms so the splash is visible.
    */
   bottleOnTheGround() {
     if (this.y >= 360) {
-      this.isBroken = true;
-      this.audioManager.playSplashSound();
-      setTimeout(() => { this.x = -5000; }, 100);
+      if (!this.isBroken) {
+        this.isBroken = true;
+        if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
+          this.audioManager.playSplashSound();
+        }
+        this.speed = 0;
+        this.speedY = 0;
+        this.acceleration = 0;
+      }
+      setTimeout(() => { this.x = -5000; }, 350);
     }
+  }
+
+  /**
+   * Breaks the bottle immediately and triggers splash animation and sound simultaneously.
+   */
+  breakNow() {
+    if (this.isBroken) return;
+    this.isBroken = true;
+    if (this.audioManager && typeof this.audioManager.playSplashSound === 'function') {
+      this.audioManager.playSplashSound();
+    }
+    this.speed = 0;
+    this.speedY = 0;
+    this.acceleration = 0;
   }
 
   /**
