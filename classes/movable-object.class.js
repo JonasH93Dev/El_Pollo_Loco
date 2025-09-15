@@ -41,10 +41,11 @@ class MovableObject extends DrawableObject {
     return (
       this.x + this.width - this.offset.right >= mo.x + mo.offset.left &&
       this.y + this.height - this.offset.bottom >= mo.y + mo.offset.top &&
-      this.x + this.offset.left <= mo.x + mo.height - mo.offset.right &&
-      this.y + this.offset.top <= mo.y + mo.width - mo.offset.bottom
+      this.x + this.offset.left <= mo.x + mo.width - mo.offset.right &&
+      this.y + this.offset.top <= mo.y + mo.height - mo.offset.bottom
     );
   }
+
 
   /** Applies small hit (-5). */
   hit() { this.applyDamage(5); }
