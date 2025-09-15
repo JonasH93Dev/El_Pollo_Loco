@@ -21,8 +21,8 @@ function bgRow(x, variant) {
 function initLevel() {
   const enemies = [...Array(5)].map(() => new Chicken())
     .concat([...Array(5)].map(() => new ChickenSmall()));
-  const coins = [...Array(8)].map(() => new Coin());
-  const bottles = [...Array(8)].map(() => new Bottle());
+  const coins = [...Array(5)].map(() => new Coin());
+  const bottles = [...Array(10)].map(() => new Bottle());
   const clouds = [...Array(5)].map(() => new Cloud());
   const bg = [-719, 0, 719, 719 * 2, 719 * 3].flatMap((x, i) => bgRow(x, i % 2 ? 1 : 2));
   level1 = new level(enemies, [new Endboss()], coins, bottles, clouds, bg);

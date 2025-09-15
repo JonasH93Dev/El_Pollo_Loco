@@ -22,24 +22,4 @@ class StatusBarCoin extends DrawableObject {
     this.loadImages(this.IMAGES);
     this.setPercentage(0);
   }
-
-  /**
-   * Sets percentage and updates displayed image.
-   * @param {number} percentage - Value from 0 to 100.
-   */
-  setPercentage(percentage) {
-    this.percentage = percentage;
-    const path = this.IMAGES[this.resolveImageIndex()];
-    this.img = this.imageCache[path];
-  }
-
-  /**
-   * Maps percentage to IMAGES index.
-   * @returns {number} Index in {@link IMAGES}.
-   */
-  resolveImageIndex() {
-    const p = this.percentage;
-    if (p == 100) return 5;
-    return p > 80 ? 4 : p > 60 ? 3 : p > 40 ? 2 : p > 20 ? 1 : 0;
-  }
 }

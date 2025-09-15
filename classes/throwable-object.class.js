@@ -1,9 +1,6 @@
 /**
  * Throwable bottle object that can be thrown by the character.
  * Extends {@link MovableObject}.
- * - Rotates while flying.
- * - Breaks on collision with ground or enemies.
- * - Plays splash sound and shows splash animation once broken.
  */
 class ThrowableObject extends MovableObject {
   width = 60;
@@ -30,53 +27,44 @@ class ThrowableObject extends MovableObject {
   ];
 
   /**
-   * Creates a new throwable bottle at the given position.
-   * @param {number} x - Initial X position.
-   * @param {number} y - Initial Y position.
+   * @param {number} x
+   * @param {number} y
+   * @param {boolean} facingRight
    */
-  constructor(x, y) {
+  constructor(x, y, facingRight = true) {
     super().loadImage(this.IMAGES_BOTTLE_ROTATION[0]);
     this.audioManager = new AudioManager();
     this.loadAllImages();
     this.x = x;
     this.y = y;
-    this.throw();
+    this.throw(facingRight);
     this.animate();
   }
 
-  /**
-   * Loads rotation and splash images.
-   */
   loadAllImages() {
     this.loadImages(this.IMAGES_BOTTLE_ROTATION);
     this.loadImages(this.IMAGES_BOTTLE_SPLASH);
   }
 
   /**
-   * Starts the throwing motion with gravity and horizontal movement.
+   * @param {boolean} facingRight
    */
-  throw() {
+  throw(facingRight) {
     this.speedY = 15;
     this.applyGravity();
+    const horizontalSpeed = facingRight ? 2 : -2;
     this.intervalThrow = setInterval(() => {
       this.bottleOnTheGround();
       if (this.isBroken) this.stopBottleAnimate();
-      else this.x += 2;
+      else this.x += horizontalSpeed;
     }, 10);
   }
 
-  /**
-   * Stops active throw intervals.
-   */
   stopBottleAnimate() {
     clearInterval(this.applyGravity);
     clearInterval(this.intervalThrow);
   }
 
-  /**
-   * Animates the bottle rotation or splash depending on state.
-   * Calls {@link handleSplashSound} once when broken.
-   */
   animate() {
     this.intervalBottle = setInterval(() => {
       this.handleSplashSound();
@@ -87,9 +75,6 @@ class ThrowableObject extends MovableObject {
     }, 50);
   }
 
-  /**
-   * Plays splash sound exactly once when the bottle breaks.
-   */
   handleSplashSound() {
     if (this.isBroken && !this._splashPlayed) {
       if (this.audioManager?.playSplashSound) {
@@ -99,9 +84,6 @@ class ThrowableObject extends MovableObject {
     }
   }
 
-  /**
-   * Handles ground collision and marks bottle as broken.
-   */
   bottleOnTheGround() {
     if (this.y >= 360 && !this.isBroken) {
       this.isBroken = true;
@@ -112,9 +94,6 @@ class ThrowableObject extends MovableObject {
     }
   }
 
-  /**
-   * Breaks the bottle immediately, stopping movement.
-   */
   breakNow() {
     if (this.isBroken) return;
     this.isBroken = true;
@@ -123,9 +102,6 @@ class ThrowableObject extends MovableObject {
     this.acceleration = 0;
   }
 
-  /**
-   * Marks bottle as broken when colliding with enemies.
-   */
   bottleHitEnemys() {
     world.enemies.forEach(enemy => {
       if (this.isColliding(enemy)) this.isBroken = true;

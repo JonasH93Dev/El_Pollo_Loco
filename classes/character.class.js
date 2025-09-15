@@ -82,6 +82,7 @@ class Character extends MovableObject {
   isJumping = false;
   canJump = true;
   _animKey = null;
+  facingRight = true;
 
   /**
    * Sets initial sprite, audio, images; enables gravity & loops.
@@ -137,14 +138,20 @@ class Character extends MovableObject {
   /** Move right if allowed; set facing and timestamp. */
   handleMoveRight() {
     if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-      this.moveRight(); this.otherDirection = false; this.lastMove = Date.now();
+      this.moveRight();
+      this.otherDirection = false;
+      this.facingRight = true;    
+      this.lastMove = Date.now();
     }
   }
 
   /** Move left if allowed; set facing and timestamp. */
   handleMoveLeft() {
     if (this.world.keyboard.LEFT && this.x > 0) {
-      this.moveLeft(); this.otherDirection = true; this.lastMove = Date.now();
+      this.moveLeft();
+      this.otherDirection = true;
+      this.facingRight = false;   
+      this.lastMove = Date.now();
     }
   }
 

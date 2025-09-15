@@ -3,23 +3,30 @@
  * Uses requestAnimationFrame for rendering and setInterval for logic updates.
  */
 class World {
-  /** Current level (default: level1). */ level = level1;
-  canvas; ctx; keyboard; camera_x = 0; lastThrowTime = 0;
-  character = new Character();
-  statusBar = new StatusBar();
-  statusBarCoin = new StatusBarCoin();
-  statusBarBottles = new StatusBarBottles();
-  statusBarEndboss = new StatusBarEndboss();
-  setHitBottles = new Set();
-  throwableObject = [];
-  coins = [];
-  bottles = [];
-  endbossAlert = false;
-  _winTriggered = false;
+  /** @type {Level} */ level = level1;
+  /** @type {HTMLCanvasElement} */ canvas;
+  /** @type {CanvasRenderingContext2D} */ ctx;
+  /** @type {Keyboard} */ keyboard;
+  /** @type {number} */ camera_x = 0;
+  /** @type {number} */ lastThrowTime = 0;
+
+  /** @type {Character} */ character = new Character();
+  /** @type {StatusBar} */ statusBar = new StatusBar();
+  /** @type {StatusBarCoin} */ statusBarCoin = new StatusBarCoin();
+  /** @type {StatusBarBottles} */ statusBarBottles = new StatusBarBottles();
+  /** @type {StatusBarEndboss} */ statusBarEndboss = new StatusBarEndboss();
+
+  /** @type {Set<any>} */ setHitBottles = new Set();
+  /** @type {ThrowableObject[]} */ throwableObject = [];
+  /** @type {Coin[]} */ coins = [];
+  /** @type {Bottle[]} */ bottles = [];
+
+  /** @type {boolean} */ endbossAlert = false;
+  /** @type {boolean} */ _winTriggered = false;
 
   /**
-   * @param {HTMLCanvasElement} canvas - Game canvas element.
-   * @param {Keyboard} keyboard - Keyboard input handler.
+   * @param {HTMLCanvasElement} canvas
+   * @param {Keyboard} keyboard
    */
   constructor(canvas, keyboard) {
     this.audioManager = new AudioManager();
@@ -31,10 +38,10 @@ class World {
     this.run();
   }
 
-  /** Assign world reference to character. */
+  /** Assigns world reference to character. */
   setWorld() { this.character.world = this; }
 
-  /** Starts main logic loops for collisions, interactions, and win condition. */
+  /** Starts logic loops. */
   run() {
     setInterval(() => {
       this.checkThrowObjects();
@@ -51,7 +58,7 @@ class World {
     }, 120);
   }
 
-  /** Renders world and all entities, character is drawn last. */
+  /** Renders world and all entities. */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.save();
@@ -70,11 +77,15 @@ class World {
     requestAnimationFrame(() => this.draw());
   }
 
-  /** Handles bottle throwing with cooldown and updates bottle bar. */
+  /** Handles bottle throwing with cooldown and direction. */
   checkThrowObjects() {
     const now = Date.now();
     if (this.keyboard.D && this.bottles.length > 0 && now - this.lastThrowTime >= 800) {
-      const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+      const facing = !!this.character.facingRight;
+      const offsetX = facing ? 50 : -50;
+      const spawnX = this.character.x + offsetX;
+      const spawnY = this.character.y + 100;
+      const bottle = new ThrowableObject(spawnX, spawnY, facing);
       this.throwableObject.push(bottle);
       this.bottles.pop();
       this.statusBarBottles.setPercentage(this.statusBarBottles.percentage - 12.5);
@@ -94,8 +105,6 @@ class World {
   }
 
   /**
-   * Handles bottle vs enemy collision.
-   * Removes enemy after short delay to allow death animation.
    * @param {ThrowableObject} bottle
    */
   checkBottleCollisionWithEnemies(bottle) {
@@ -117,8 +126,6 @@ class World {
   }
 
   /**
-   * Handles bottle vs end boss collision.
-   * Prevents duplicate hits with setHitBottles.
    * @param {ThrowableObject} bottle
    */
   checkBottleCollisionWithEndBoss(bottle) {
@@ -198,7 +205,7 @@ class World {
     });
   }
 
-  /** Checks win condition: all end bosses defeated. */
+  /** Checks win condition. */
   checkWinCondition() {
     if (this._winTriggered) return;
     const bosses = this.level.endboss || [];
@@ -209,13 +216,11 @@ class World {
   }
 
   /**
-   * Adds multiple objects to the map.
    * @param {DrawableObject[]} objects
    */
   addObjectsToMap(objects) { objects.forEach(o => this.addToMap(o)); }
 
   /**
-   * Adds a single object to the map, flipping if required.
    * @param {DrawableObject} mo
    */
   addToMap(mo) {
@@ -224,7 +229,9 @@ class World {
     if (mo.otherDirection) this.flipImageBack(mo);
   }
 
-  /** Flips image horizontally. */
+  /**
+   * @param {DrawableObject} mo
+   */
   flipImage(mo) {
     this.ctx.save();
     this.ctx.translate(mo.width, 0);
@@ -232,26 +239,33 @@ class World {
     mo.x = mo.x * -1;
   }
 
-  /** Restores image orientation after flip. */
+  /**
+   * @param {DrawableObject} mo
+   */
   flipImageBack(mo) {
     mo.x = mo.x * -1;
     this.ctx.restore();
   }
 
-  /** Collects a bottle and removes it from level. */
+  /**
+   * @param {Bottle} bottle
+   * @param {number} index
+   */
   collectBottles(bottle, index) {
     this.bottles.push(bottle);
     this.level.bottles.splice(index, 1);
   }
 
-  /** Collects a coin and removes it from level. */
+  /**
+   * @param {Coin} coin
+   * @param {number} index
+   */
   collectCoins(coin, index) {
     this.coins.push(coin);
     this.level.coins.splice(index, 1);
   }
 
   /**
-   * Deletes an enemy by index.
    * @param {number} index
    */
   deleteEnemy(index) {
@@ -259,22 +273,22 @@ class World {
   }
 
   /**
-   * Deletes a thrown bottle by index.
    * @param {number} index
    */
   deleteBottle(index) { setTimeout(() => { this.throwableObject.splice(index, 1); }, 100); }
 
-  /** Deletes a thrown bottle by reference. */
+  /**
+   * @param {ThrowableObject} bottle
+   */
   deleteBottleByRef(bottle) {
     const idx = this.throwableObject.indexOf(bottle);
     if (idx >= 0) this.throwableObject.splice(idx, 1);
   }
 
   /**
-   * Removes an item from an array after a delay.
    * @param {any[]} arr
    * @param {any} item
-   * @param {number} delay
+   * @param {number} [delay=400]
    */
   scheduleRemovalFromArray(arr, item, delay = 400) {
     setTimeout(() => {
